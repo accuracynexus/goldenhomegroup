@@ -1,0 +1,41 @@
+---
+/* Formulario que se envía por WhatsApp (lo arma sitio.js con
+   data-form-titulo). No viaja al servidor: abre el chat con los datos
+   ordenados en el mensaje. */
+import Campo, { type CampoDef } from './Campo.astro';
+import { ICO, } from '../lib/iconos';
+import { TEL } from '../lib/config';
+
+interface Props {
+  id: string;
+  titulo: string;
+  intro?: string;
+  tituloWa: string;
+  campos: CampoDef[];
+  boton: string;
+  nota?: string;
+}
+const { id, titulo, intro, tituloWa, campos, boton, nota } = Astro.props;
+---
+<section class="section section--soft" id="formulario">
+  <div class="container form-wrap reveal">
+    <div class="form-wrap__head">
+      <h2 class="section__title">{titulo}</h2>
+      {intro && <p class="section__sub">{intro}</p>}
+    </div>
+
+    <form class="form" id={id} data-form-titulo={tituloWa} novalidate>
+      <div class="form__grid">
+        {campos.map(c => <Campo {...c} />)}
+      </div>
+
+      <div class="form__foot">
+        <button type="submit" class="btn btn--gold btn--lg">
+          {boton} <Fragment set:html={ICO.flecha} />
+        </button>
+        {nota && <p class="form__nota">{nota}</p>}
+      </div>
+      <p class="form__ok" hidden>Abrimos WhatsApp con tu consulta. Si no se abrió, escríbenos al {TEL}.</p>
+    </form>
+  </div>
+</section>

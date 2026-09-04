@@ -1,0 +1,377 @@
+---
+/* Panel administrativo. Vive fuera del sitio público: sin cabecera ni pie,
+   y con sus propios estilos.
+
+   Quién ve qué lo decide el SERVIDOR: si la cookie es válida entrega el
+   panel, y si no, la pantalla de acceso. Antes ambas salían ocultas y el
+   navegador tenía que preguntar antes de mostrar nada, así que se veía la
+   página en blanco hasta que respondiera —y en blanco para siempre si el
+   JS fallaba—.
+
+   Cada llamada a /api/admin/* vuelve a validar la sesión por su cuenta:
+   mostrar el panel acá no concede ningún permiso. */
+export const prerender = false;
+import { sesionDe } from '../../lib/auth';
+import '../../styles/admin.css';
+
+const sesion = sesionDe(Astro.request);
+const autenticado = !!sesion;
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel · Golden Home Group</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/assets/img/favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<!-- ============ ACCESO ============ -->
+<div class="acceso" id="acceso" hidden={autenticado}>
+  <form class="acceso__caja" id="formLogin" novalidate>
+    <img src="/assets/img/logo-golden.png" alt="Golden Home Group" width="150" height="75">
+
+    <h1>Panel administrativo</h1>
+    <p class="acceso__sub">Ingresa para gestionar las propiedades</p>
+
+    <div class="acceso__campo">
+      <label for="usuario">Correo</label>
+      <div class="acceso__control">
+        <span class="acceso__ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+        </span>
+        <input type="email" id="usuario" name="usuario" autocomplete="username"
+               placeholder="tucorreo@goldenhomegroup.com" required autofocus>
+      </div>
+    </div>
+
+    <div class="acceso__campo">
+      <label for="clave">Contraseña</label>
+      <div class="acceso__control">
+        <span class="acceso__ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+        </span>
+        <input type="password" id="clave" name="clave" autocomplete="current-password"
+               placeholder="Tu contraseña" required>
+        <button type="button" class="acceso__ver" id="verClave"
+                aria-label="Mostrar contraseña" aria-pressed="false">
+          <svg viewBox="0 0 24 24" class="acceso__ojo"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg viewBox="0 0 24 24" class="acceso__ojo-off"><path d="M2.5 12S6 5.5 12 5.5c1.4 0 2.7.35 3.8.9M21.5 12s-3.5 6.5-9.5 6.5c-1.4 0-2.7-.35-3.8-.9"/><path d="m4 4 16 16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn--gold acceso__enviar" id="btnEntrar">
+      <span class="acceso__enviar-txt">Entrar</span>
+      <span class="acceso__giro" aria-hidden="true"></span>
+    </button>
+
+    <p class="acceso__error" id="loginError" role="alert" hidden></p>
+  </form>
+</div>
+
+<!-- ============ PANEL ============ -->
+<div class="panel" id="panel" hidden={!autenticado}>
+  <header class="barra">
+    <div class="barra__marca">
+      <img src="/assets/img/favicon.svg" alt="" width="34" height="34">
+      <div>
+        <strong>Golden Home Group</strong>
+        <span>Administrador de propiedades</span>
+      </div>
+    </div>
+    <div class="barra__acciones" id="barraAcciones">
+      <a class="btn btn--ghost" href="/" target="_blank" rel="noopener">Ver la web</a>
+      <button class="btn btn--gold" id="btnNueva">+ Nueva propiedad</button>
+      <button class="btn btn--ghost" id="btnSalir">Salir</button>
+    </div>
+    <!-- Solo se ve en pantallas angostas; en escritorio los botones van sueltos
+         en la barra y esto queda oculto por CSS. -->
+    <button class="barra__menu" id="btnMenu" type="button"
+            aria-label="Abrir el menú" aria-expanded="false" aria-controls="barraAcciones">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="barra__velo" id="menuVelo"></div>
+  </header>
+
+  <main class="contenido">
+    <section class="resumen" id="resumen"></section>
+
+    <div class="filtros">
+      <input type="search" id="buscar" placeholder="Buscar por título, ubicación o código…">
+      <select id="filtroTipo">
+        <option value="">Todos los tipos</option>
+        <option value="terreno">Terreno</option>
+        <option value="casa">Casa</option>
+        <option value="departamento">Departamento</option>
+        <option value="local">Local</option>
+      </select>
+      <select id="filtroZona">
+        <option value="">Todas las zonas</option>
+        <option value="Junín">Junín</option>
+        <option value="Lima">Lima</option>
+      </select>
+      <select id="filtroEstado">
+        <option value="">Todos los estados</option>
+        <option value="disponible">Disponible</option>
+        <option value="reservado">Reservado</option>
+        <option value="vendido">Vendido</option>
+        <option value="alquilado">Alquilado</option>
+      </select>
+    </div>
+
+    <div class="tabla-wrap">
+      <table class="tabla" id="tabla">
+        <thead>
+          <tr>
+            <th>Propiedad</th>
+            <th>Tipo</th>
+            <th>Operación</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Destacada</th>
+            <th>Publicada</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="filas"></tbody>
+      </table>
+      <p class="vacio" id="vacio" hidden>No hay propiedades que coincidan.</p>
+    </div>
+  </main>
+</div>
+
+<!-- ============ FORMULARIO DE PROPIEDAD ============ -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__veil" id="modalVeil"></div>
+  <form class="modal__caja" id="formProp">
+    <header class="modal__head">
+      <h2 id="modalTitulo">Nueva propiedad</h2>
+      <button type="button" class="modal__x" id="modalCerrar" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <div class="modal__cuerpo">
+      <div class="campos">
+        <h3 class="grupo"><span>Datos principales</span><em>lo que identifica la propiedad</em></h3>
+
+        <label class="campo campo--full">
+          <span>Título *</span>
+          <input type="text" name="titulo" required placeholder="Casa moderna con jardín en La Molina">
+        </label>
+
+        <label class="campo">
+          <span>Tipo de propiedad</span>
+          <select name="tipo">
+            <option value="terreno">Terreno</option>
+            <option value="casa">Casa</option>
+            <option value="departamento">Departamento</option>
+            <option value="local">Local</option>
+          </select>
+        </label>
+
+        <label class="campo">
+          <span>Etiqueta comercial <em>(opcional)</em></span>
+          <input type="text" name="subtipo" placeholder="Dúplex, Lotes, Piso comercial…">
+        </label>
+
+        <label class="campo">
+          <span>Operación</span>
+          <select name="operacion">
+            <option value="venta">Venta</option>
+            <option value="alquiler">Alquiler</option>
+          </select>
+        </label>
+
+        <h3 class="grupo"><span>Precio y estado</span><em>cómo se ofrece al público</em></h3>
+
+        <label class="campo">
+          <span>Moneda</span>
+          <select name="moneda">
+            <option value="PEN">Soles (S/)</option>
+            <option value="USD">Dólares (US$)</option>
+          </select>
+        </label>
+
+        <label class="campo">
+          <span>Precio</span>
+          <input type="number" name="precio" min="0" step="100" placeholder="480000">
+        </label>
+
+        <label class="campo">
+          <span>Precio por m² <em>(opcional)</em></span>
+          <input type="number" name="precio_m2" min="0" step="1" placeholder="785">
+        </label>
+
+        <label class="campo">
+          <span>Estado</span>
+          <select name="estado">
+            <option value="disponible">Disponible</option>
+            <option value="reservado">Reservado</option>
+            <option value="vendido">Vendido</option>
+            <option value="alquilado">Alquilado</option>
+          </select>
+        </label>
+
+        <h3 class="grupo"><span>Ubicación</span><em>dónde está y cómo llegar</em></h3>
+
+        <label class="campo campo--full">
+          <span>Dirección <em>(no se publica; alimenta los datos del buscador)</em></span>
+          <input type="text" name="direccion" placeholder="Av. La Molina 1234, Mz. B Lt. 7…">
+        </label>
+
+        <label class="campo campo--full">
+          <span>Ubicación <em>(la que se muestra en las tarjetas)</em></span>
+          <input type="text" name="ubicacion" placeholder="La Molina, Lima">
+        </label>
+
+        <label class="campo">
+          <span>Distrito</span>
+          <input type="text" name="distrito" placeholder="Huancayo">
+        </label>
+
+        <label class="campo">
+          <span>Zona <em>(separa el listado de compra)</em></span>
+          <select name="region">
+            <option value="Junín">Junín</option>
+            <option value="Lima">Lima</option>
+          </select>
+        </label>
+
+        <label class="campo campo--full">
+          <span>Referencia <em>(opcional)</em></span>
+          <input type="text" name="referencia" placeholder="Frente al Parque Los Tulipanes, cerca de Sumar…">
+        </label>
+
+        <label class="campo campo--full">
+          <span>Mapa (dirección o lugar)</span>
+          <input type="text" name="mapa" placeholder="La Molina, Lima, Perú">
+        </label>
+
+        <h3 class="grupo"><span>Medidas y ambientes</span><em>las cifras que se ven en la ficha</em></h3>
+
+        <label class="campo">
+          <span>Área (m²)</span>
+          <input type="number" name="area" min="0" step="0.01" placeholder="280">
+        </label>
+
+        <label class="campo">
+          <span>Área construida (m²) <em>(opcional)</em></span>
+          <input type="number" name="area_construida" min="0" step="0.01" placeholder="500">
+        </label>
+
+        <label class="campo">
+          <span>Frontis <em>(terrenos)</em></span>
+          <input type="text" name="frontis" placeholder="8 m, Triple frontis…">
+        </label>
+
+        <label class="campo">
+          <span>Habitaciones</span>
+          <input type="number" name="habitaciones" min="0" placeholder="4">
+        </label>
+
+        <label class="campo">
+          <span>Baños</span>
+          <input type="number" name="banos" min="0" placeholder="3">
+        </label>
+
+        <label class="campo">
+          <span>Estacionamientos</span>
+          <input type="number" name="estacionamientos" min="0" placeholder="2">
+        </label>
+
+        <label class="campo">
+          <span>Piso <em>(la unidad)</em></span>
+          <input type="number" name="piso" min="0" placeholder="12">
+        </label>
+
+        <label class="campo">
+          <span>Niveles <em>(la construcción)</em></span>
+          <input type="number" name="niveles" min="0" placeholder="4">
+        </label>
+
+        <label class="campo campo--full">
+          <span>Parámetros de construcción <em>(terrenos)</em></span>
+          <input type="text" name="parametros_construccion" placeholder="8 a 20 pisos, hasta 8 pisos…">
+        </label>
+
+        <h3 class="grupo"><span>Descripción y detalle</span><em>el texto que lee el interesado</em></h3>
+
+        <label class="campo campo--full">
+          <span>Descripción</span>
+          <textarea name="descripcion" rows="4" placeholder="Describe la propiedad en dos o tres frases."></textarea>
+        </label>
+
+        <label class="campo campo--full">
+          <span>Medidas perimétricas <em>(opcional, terrenos)</em></span>
+          <textarea name="linderos" rows="3" placeholder="Norte: 32.25 m, colinda con…"></textarea>
+        </label>
+
+        <label class="campo campo--full">
+          <span>Documentación <em>(opcional)</em></span>
+          <textarea name="documentacion" rows="2" placeholder="Saneado y listo para transferencia inmediata…"></textarea>
+        </label>
+
+        <label class="campo campo--full">
+          <span>Características <em>(una por línea)</em></span>
+          <textarea name="caracteristicas" rows="5" placeholder="Jardín posterior&#10;Cocina equipada&#10;Cochera para 2 autos"></textarea>
+        </label>
+
+        <h3 class="grupo"><span>Multimedia</span><em>video y fotografías de la propiedad</em></h3>
+
+        <label class="campo campo--full">
+          <span>Video <em>(enlace de YouTube, opcional)</em></span>
+          <input type="url" name="video" placeholder="https://www.youtube.com/watch?v=…">
+        </label>
+
+        <!-- Dos imágenes con encuadres distintos: la tarjeta es 4:3 y la
+             portada de la ficha 16:9. Los input viven fuera de su contenedor
+             porque ese se repinta entero y se los llevaría por delante; el
+             label los alcanza por "for". -->
+        <div class="campo campo--full">
+          <span>Fotografía de la tarjeta <em>(4:3)</em></span>
+          <input type="file" id="archivoTarjeta" accept="image/png,image/jpeg,image/webp" hidden>
+          <div class="portadilla" id="fotoTarjeta"></div>
+          <small>La que aparece en el listado, en el buscador y en el inicio.</small>
+        </div>
+
+        <div class="campo campo--full">
+          <span>Portada de la ficha <em>(16:9, opcional)</em></span>
+          <input type="file" id="archivoPortada" accept="image/png,image/jpeg,image/webp" hidden>
+          <div class="portadilla portadilla--ancha" id="fotoPortada"></div>
+          <small>La imagen grande de la página de la propiedad. Sin ella se usa la de la tarjeta.</small>
+        </div>
+
+        <h3 class="grupo"><span>Publicación</span><em>dónde y cómo aparece en la web</em></h3>
+
+        <div class="campo campo--full interruptores">
+          <label class="switch">
+            <input type="checkbox" name="destacada">
+            <span></span> Destacada en la página de inicio
+          </label>
+          <label class="switch">
+            <input type="checkbox" name="visible" checked>
+            <span></span> Publicada en la web
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <footer class="modal__pie">
+      <button type="button" class="btn btn--borrar" id="btnEliminar" hidden>Eliminar</button>
+      <div class="modal__pie-der">
+        <button type="button" class="btn btn--ghost" id="btnCancelar">Cancelar</button>
+        <button type="submit" class="btn btn--gold" id="btnGuardar">Guardar propiedad</button>
+      </div>
+    </footer>
+  </form>
+</div>
+
+<div class="aviso" id="aviso" hidden></div>
+
+<script src="/js/admin.js" is:inline></script>
+</body>
+</html>

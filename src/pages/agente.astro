@@ -1,0 +1,89 @@
+---
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Formulario from '../components/Formulario.astro';
+import Faq from '../components/Faq.astro';
+import { ICO, I } from '../lib/iconos';
+import { BENEFICIOS, PERFIL } from '../lib/contenido';
+import { TEL } from '../lib/config';
+---
+<Base titulo="Sé un agente | Golden Home Group"
+      descripcion="Forma parte de nuestro equipo de agentes inmobiliarios y desarróllate en el sector.">
+
+  <Hero variante="equipo"
+        foto="/assets/img/hero-agente.webp"
+        titulo='Crece con<br><span class="text-gold">Golden Home Group</span>'
+        subtitulo="Forma parte de nuestro equipo de agentes inmobiliarios."
+        texto="Buscamos personas con interés en desarrollarse dentro del sector y ganas de construir su propia cartera de clientes.">
+    <Fragment slot="botones">
+      <a href="#formulario" class="btn btn--gold btn--lg">Postular ahora <Fragment set:html={ICO.flecha} /></a>
+      <a href="#perfil" class="btn btn--ghost btn--lg">Ver el perfil</a>
+    </Fragment>
+    <ul class="phero__puntos reveal" data-delay="5" slot="extra">
+      <li><Fragment set:html={I.reloj} /><span>Una empresa con más de 8 años en el sector</span></li>
+      <li><Fragment set:html={I.etiqueta} /><span>Cartera con terrenos, casas, departamentos y locales</span></li>
+      <li><Fragment set:html={I.personas} /><span>Acompañamiento durante tu desarrollo</span></li>
+      <li><Fragment set:html={I.grafico} /><span>Oportunidades para ampliar tu cartera</span></li>
+    </ul>
+  </Hero>
+
+  <!-- ============ BENEFICIOS ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Desarróllate junto a <span class="text-gold">un equipo con trayectoria</span></h2>
+      </div>
+      <div class="grid grid--4">
+        {BENEFICIOS.map(([t, d, ico], i) => (
+          <article class="valor reveal" data-delay={i}>
+            <span class="valor__ico"><Fragment set:html={I[ico]} /></span>
+            <h3>{t}</h3>
+            <p>{d}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PERFIL ============ -->
+  <section class="section section--soft" id="perfil">
+    <div class="container perfil">
+      <div class="perfil__texto reveal">
+        <h2 class="section__title">Personas con ganas<br><span class="text-gold">de crecer con nosotros</span></h2>
+        <p>La experiencia previa puede ser considerada, pero no es un requisito excluyente salvo que
+        Golden Home Group determine lo contrario para una convocatoria específica.</p>
+        <a href="#formulario" class="btn btn--negro">Postular ahora <Fragment set:html={ICO.flecha} /></a>
+      </div>
+      <ul class="perfil__lista reveal" data-delay="1">
+        {PERFIL.map(([ico, t]) => <li><Fragment set:html={I[ico]} /> {t}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <Formulario
+    id="formAgente"
+    titulo="¿Quieres formar parte de nuestro equipo?"
+    intro="Completa el formulario y nos pondremos en contacto contigo."
+    tituloWa="Postulación a agente inmobiliario"
+    boton="Quiero ser agente"
+    nota="Puedes enviarnos tu CV en el chat de WhatsApp al finalizar."
+    campos={[
+      { id: 'ag-nombre', name: 'Nombre completo', label: 'Nombre completo', required: true, placeholder: 'Ingresa tu nombre' },
+      { id: 'ag-wsp', name: 'Teléfono / WhatsApp', label: 'Teléfono / WhatsApp', tipo: 'tel', required: true, placeholder: '+51 900 000 000' },
+      { id: 'ag-mail', name: 'Correo', label: 'Correo electrónico', tipo: 'email', placeholder: 'tucorreo@ejemplo.com' },
+      { id: 'ag-ciudad', name: 'Ciudad', label: 'Ciudad', required: true, placeholder: 'Lima, Huancayo…' },
+      { id: 'ag-exp', name: 'Experiencia como agente', label: '¿Tienes experiencia como agente inmobiliario?', tipo: 'select', required: true, opciones: ['Sí', 'No'] },
+      { id: 'ag-cv', name: 'cv', label: 'Adjuntar CV', tipo: 'file', accept: '.pdf,.doc,.docx', ayuda: 'Opcional. Podrás adjuntarlo en el chat al enviar.' },
+      { id: 'ag-msg', name: 'Sobre ti', label: 'Cuéntanos sobre ti', tipo: 'textarea', ancho: 'full', placeholder: 'Tu experiencia, tus intereses, tu disponibilidad' }
+    ]} />
+
+  <Faq titulo='Preguntas sobre <span class="text-gold">la postulación</span>'
+       items={[
+         ['¿Necesito experiencia para postular?', 'La convocatoria puede estar abierta tanto a personas con experiencia como a personas interesadas en iniciar su desarrollo en el sector, según los criterios de selección de Golden Home Group.'],
+         ['¿Cómo puedo postular?', 'Completa el formulario de esta página.'],
+         ['¿Qué tipo de propiedades comercializan?', 'Terrenos, casas, departamentos y locales.'],
+         ['¿Cómo me contacto con Golden Home Group?', `Puedes escribirnos por WhatsApp al ${TEL}.`]
+       ]} />
+</Base>

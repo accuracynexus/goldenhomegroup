@@ -1,0 +1,75 @@
+---
+/* Plantilla de todas las páginas del sitio público:
+   cabeza del documento, cabecera, contenido y pie. */
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Splash from '../components/Splash.astro';
+import '../styles/global.css';
+
+interface Props {
+  titulo: string;
+  descripcion: string;
+  imagen?: string;
+}
+
+const { titulo, descripcion, imagen = '/assets/img/logo-golden.png' } = Astro.props;
+const ruta = Astro.url.pathname;
+const canonica = new URL(ruta, Astro.site ?? Astro.url.origin).href;
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{titulo}</title>
+<meta name="description" content={descripcion}>
+<meta name="theme-color" content="#0B0B0C">
+<link rel="canonical" href={canonica}>
+
+<meta property="og:type" content="website">
+<meta property="og:title" content={titulo}>
+<meta property="og:description" content={descripcion}>
+<meta property="og:image" content={new URL(imagen, Astro.site ?? Astro.url.origin).href}>
+<meta property="og:url" content={canonica}>
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/assets/img/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+
+<!-- El logo de la bienvenida se pide antes que nada: es lo primero que se ve
+     y no puede quedar un hueco esperándolo. Va delante de las fuentes a
+     propósito, porque el texto de la cortina es el propio logo. -->
+<link rel="preload" as="image" href="/assets/img/logo-splash.webp" fetchpriority="high">
+
+<script is:inline>
+  /* Se decide ANTES de pintar: si la bienvenida ya se vio en esta visita, la
+     clase no se pone y el CSS deja la cortina oculta desde el primer
+     fotograma, sin destello al cambiar de página. */
+  try {
+    /* ?splash=1 la fuerza aunque ya se haya visto. Sirve para enseñarla sin
+       tener que borrar nada a mano; para el visitante normal no cambia nada. */
+    var forzar = location.search.indexOf('splash=1') !== -1;
+    if (forzar || !sessionStorage.getItem('ghg_splash')) {
+      document.documentElement.classList.add('splash-activo');
+    }
+  } catch (e) {
+    document.documentElement.classList.add('splash-activo');
+  }
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+</head>
+<body>
+<Splash />
+<Header ruta={ruta} />
+<main>
+  <slot />
+</main>
+<Footer />
+
+<script src="/js/sitio.js" is:inline></script>
+</body>
+</html>

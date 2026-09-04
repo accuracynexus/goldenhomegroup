@@ -1,0 +1,156 @@
+---
+import Base from '../layouts/Base.astro';
+import Buscador from '../components/Buscador.astro';
+import Card from '../components/Card.astro';
+import Formulario from '../components/Formulario.astro';
+import Faq from '../components/Faq.astro';
+import CtaFinal from '../components/CtaFinal.astro';
+import { ICO, I } from '../lib/iconos';
+import { filtrar, regiones, type Filtros } from '../lib/db';
+import { TEL } from '../lib/config';
+
+const q = Astro.url.searchParams;
+const num = (k: string) => q.has(k) ? Number(q.get(k)) : undefined;
+
+const filtros: Filtros = {
+  tipo: q.get('tipo') || undefined,
+  operacion: q.get('operacion') || undefined,
+  ubicacion: q.get('ubicacion') || undefined,
+  region: q.get('region') || undefined,
+  precioMin: num('precioMin'),
+  precioMax: num('precioMax'),
+  areaMin: num('areaMin'),
+  areaMax: num('areaMax')
+};
+
+const resultados = filtrar(filtros);
+const valores = Object.fromEntries(q.entries());
+const hayFiltros = Object.values(filtros).some(v => v !== undefined && v !== '');
+
+const conteo = resultados.length === 1
+  ? '1 propiedad disponible'
+  : `${resultados.length} propiedades disponibles`;
+
+/* Pestañas por zona. La agencia trabaja Lima y Junín, mercados con precios
+   y públicos distintos: separarlos evita que alguien de Lima recorra avisos
+   de Huancayo creyendo que están cerca. Cada pestaña conserva el resto de
+   los filtros ya aplicados. */
+const zonaActiva = filtros.region || '';
+
+/* Los conteos se calculan sobre el resto de filtros ya aplicados, no sobre
+   el catálogo entero: si no, la pestaña prometía "Lima 7" y abajo aparecían
+   cuatro. Las zonas salen de la base para que una que quede en cero siga
+   estando y se pueda volver a ella. */
+const base = filtrar({ ...filtros, region: undefined });
+const zonas = regiones().map(z => ({
+  nombre: z.nombre,
+  total: base.filter(p => p.region === z.nombre).length
+}));
+const enlaceZona = (r: string) => {
+  const u = new URLSearchParams(q);
+  r ? u.set('region', r) : u.delete('region');
+  const cadena = u.toString();
+  return `/compra${cadena ? '?' + cadena : ''}#resultados`;
+};
+---
+<Base titulo="Compra de propiedades | Golden Home Group"
+      descripcion="Explora terrenos, casas, departamentos y locales en venta y alquiler. Filtra por tipo, ubicación, precio y área.">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="compra">
+    <div class="container">
+      <div class="banner">
+        <div class="banner__content">
+          <h1 class="banner__title reveal" data-delay="1">
+            Encuentra la propiedad<br><span class="text-gold">ideal para ti</span>
+          </h1>
+          <p class="banner__text reveal" data-delay="2">
+            Filtra por tipo, zona, precio y área. Cada ficha trae fotografías, características y ubicación.
+          </p>
+          <div class="banner__botones reveal" data-delay="3">
+            <a href="#resultados" class="btn btn--negro btn--lg">Ver propiedades disponibles <Fragment set:html={ICO.flecha} /></a>
+          </div>
+          <ul class="banner__chips reveal" data-delay="4">
+            <li><Fragment set:html={I.lupa} /> Búsqueda por zona y presupuesto</li>
+            <li><Fragment set:html={I.mapa} /> Lima y Huancayo</li>
+            <li><Fragment set:html={I.escudo} /> Fichas verificadas por el equipo</li>
+          </ul>
+        </div>
+
+        <div class="banner__media">
+          <img src="/assets/img/banner-compra.webp"
+               alt="Propiedades disponibles en Golden Home Group"
+               loading="eager" width="1600" height="1067">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Buscador id="buscador" accion="/compra" limpiar={hayFiltros} valores={valores} />
+
+  <!-- ============ RESULTADOS ============ -->
+  <section class="section section--soft" id="resultados">
+    <div class="container">
+      <div class="section__head section__head--split">
+        <div>
+          <h2 class="section__title reveal" data-delay="1">Propiedades <span class="text-gold">disponibles</span></h2>
+        </div>
+        <p class="contador reveal" data-delay="2" id="contadorResultados">{conteo}</p>
+      </div>
+
+      {zonas.length > 1 && (
+        <nav class="zonas reveal" data-delay="2" aria-label="Filtrar por zona">
+          <a href={enlaceZona('')} class:list={['zonas__op', { 'is-activa': !zonaActiva }]}>
+            Todas <span>{base.length}</span>
+          </a>
+          {zonas.map(z => (
+            <a href={enlaceZona(z.nombre)}
+               class:list={['zonas__op', { 'is-activa': zonaActiva === z.nombre, 'is-vacia': z.total === 0 }]}>
+              {z.nombre} <span>{z.total}</span>
+            </a>
+          ))}
+        </nav>
+      )}
+
+      <div class="grid grid--3" id="gridResultados">
+        {resultados.length > 0
+          ? resultados.map(p => <Card p={p} />)
+          : <p class="lista-vacia">
+              {zonaActiva
+                ? `No hay propiedades en ${zonaActiva} que coincidan con tu búsqueda.`
+                : 'No hay propiedades que coincidan con tu búsqueda.'}
+            </p>}
+      </div>
+    </div>
+  </section>
+
+  <Formulario
+    id="formComprador"
+    titulo="¿No encuentras lo que estás buscando?"
+    intro="Cuéntanos qué propiedad necesitas y nuestro equipo te ayudará a encontrar una alternativa."
+    tituloWa="Búsqueda de propiedad"
+    boton="Quiero encontrar una propiedad"
+    nota="Al enviar se abre WhatsApp con tus datos listos para mandar."
+    campos={[
+      { id: 'co-nombre', name: 'Nombre completo', label: 'Nombre completo', required: true, placeholder: 'Ingresa tu nombre' },
+      { id: 'co-wsp', name: 'WhatsApp', label: 'WhatsApp', tipo: 'tel', required: true, placeholder: '+51 900 000 000' },
+      { id: 'co-mail', name: 'Correo', label: 'Correo electrónico', tipo: 'email', placeholder: 'tucorreo@ejemplo.com' },
+      { id: 'co-tipo', name: 'Propiedad que busca', label: '¿Qué propiedad buscas?', tipo: 'select', required: true, opciones: ['Terreno', 'Casa', 'Departamento', 'Local'] },
+      { id: 'co-op', name: 'Necesita', label: '¿Qué necesitas?', tipo: 'select', required: true, opciones: ['Comprar', 'Alquilar'] },
+      { id: 'co-ubi', name: 'Ubicación de interés', label: 'Ubicación de interés', placeholder: 'Distrito o ciudad' },
+      { id: 'co-pres', name: 'Presupuesto', label: 'Presupuesto aproximado', placeholder: 'S/' },
+      { id: 'co-msg', name: 'Mensaje', label: 'Mensaje', tipo: 'textarea', ancho: 'full', placeholder: 'Cuéntanos qué estás buscando' }
+    ]} />
+
+  <Faq titulo='Preguntas sobre <span class="text-gold">la compra</span>'
+       intro="Lo que necesitas saber antes de solicitar información sobre una propiedad."
+       items={[
+         ['¿Qué tipos de propiedades puedo encontrar?', 'Terrenos, casas, departamentos y locales, según la disponibilidad.'],
+         ['¿Cómo puedo solicitar información de una propiedad?', 'Puedes hacerlo mediante el botón de contacto disponible en cada ficha de propiedad.'],
+         ['¿Puedo solicitar una visita?', 'La disponibilidad de visitas dependerá de cada propiedad. Puedes comunicarte con nuestro equipo para coordinar.'],
+         ['¿Qué hago si no encuentro la propiedad que busco?', 'Completa nuestro formulario de búsqueda y cuéntanos qué necesitas.'],
+         ['¿Puedo contactar directamente por WhatsApp?', `Sí. Nuestro número es ${TEL}.`]
+       ]} />
+
+  <CtaFinal titulo="¿Encontraste una propiedad<br>que te interesa?" boton="Hablar con un asesor" />
+</Base>

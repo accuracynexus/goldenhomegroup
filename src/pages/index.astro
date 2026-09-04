@@ -1,0 +1,288 @@
+---
+import Base from '../layouts/Base.astro';
+import Buscador from '../components/Buscador.astro';
+import Card from '../components/Card.astro';
+import Faq from '../components/Faq.astro';
+import CtaFinal from '../components/CtaFinal.astro';
+import { ICO, I, ICO_TIPO } from '../lib/iconos';
+import { TIPOS, FRASES, SERVICIOS_INICIO, JORNADA, TESTIMONIOS } from '../lib/contenido';
+import { destacadas } from '../lib/db';
+import { TEL, VIDEO_INICIO, VIDEO_INICIO_PROPORCION } from '../lib/config';
+
+const propiedades = destacadas(6);
+
+/* Drive incrusta por ID de archivo, no por enlace, así que se extrae el ID
+   de cualquiera de las formas en que puede venir pegado. Si no hay nada
+   configurado, la caja sigue mostrando la placa de "próximamente". */
+const idDrive = (VIDEO_INICIO.match(/[-\w]{25,}/) || [])[0] || '';
+const videoInicio = idDrive ? `https://drive.google.com/file/d/${idDrive}/preview` : '';
+
+/* La proporción viaja al CSS como variable, que es quien hace la cuenta del
+   recorte. Un video vertical además cambia la forma de la caja en pantallas
+   angostas: ahí una caja apaisada le comería más de la mitad. */
+const [anchoVideo, altoVideo] = VIDEO_INICIO_PROPORCION.split('/').map(Number);
+const videoVertical = anchoVideo / altoVideo < 1;
+---
+<Base titulo="Golden Home Group | Inmobiliaria en Lima y Huancayo"
+      descripcion="Terrenos, casas, departamentos y locales en Lima y Huancayo. Más de 8 años creando oportunidades inmobiliarias.">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="inicio">
+    <div class="container">
+      <div class="banner">
+        <div class="banner__content">
+          <h1 class="banner__title reveal" data-delay="1">
+            Encuentra tu próxima<br><span class="text-gold">oportunidad inmobiliaria</span>
+          </h1>
+          <p class="banner__text reveal" data-delay="2">
+            Terrenos, casas, departamentos y locales para diferentes necesidades y oportunidades.
+            En Golden Home Group conectamos personas con propiedades, brindando acompañamiento
+            durante todo el proceso.
+          </p>
+          <div class="banner__botones reveal" data-delay="3">
+            <a href="/resultados" class="btn btn--negro btn--lg">Ver propiedades <Fragment set:html={ICO.flecha} /></a>
+            <a href="/vende" class="btn btn--outline btn--lg">Quiero vender</a>
+          </div>
+        </div>
+
+        <!-- Accesos rápidos sobre la fotografía: las tres cosas que puede
+             venir a hacer alguien que llega al sitio. -->
+        <ul class="banner__accesos">
+          <li><a href="/vende"><img src="/assets/img/hero/house.png" alt="" width="128" height="128" loading="eager"><span>Vender</span></a></li>
+          <li><a href="/compra"><img src="/assets/img/hero/search.png" alt="" width="128" height="128" loading="eager"><span>Comprar</span></a></li>
+          <li><a href="/compra?operacion=alquiler"><img src="/assets/img/hero/key.png" alt="" width="128" height="128" loading="eager"><span>Alquilar</span></a></li>
+        </ul>
+
+        <div class="banner__media">
+          <img src="/assets/img/banner-inicio.webp"
+               alt="Residencia moderna del portafolio de Golden Home Group"
+               loading="eager" width="1600" height="1061">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Buscador id="buscadorInicio" titulo="¿Qué propiedad estás buscando?"
+            accion="/resultados" textoBoton="Buscar propiedad" />
+
+  <!-- ============ FRANJA INFINITA ============ -->
+  <div class="marquee" aria-label="Nuestros servicios" role="region">
+    <div class="marquee__track">
+      {[0, 1].map(i => (
+        <ul class="marquee__group" aria-hidden={i ? 'true' : undefined}>
+          {FRASES.map(([ico, texto]) => <li><Fragment set:html={ico} /> {texto}</li>)}
+        </ul>
+      ))}
+    </div>
+  </div>
+
+  <!-- ============ PROPIEDADES DESTACADAS ============ -->
+  <section class="section section--soft" id="destacadas">
+    <div class="container">
+      <div class="section__head section__head--split">
+        <div>
+          <h2 class="section__title reveal" data-delay="1">Encuentra una propiedad<br><span class="text-gold">que se adapte a ti</span></h2>
+        </div>
+        <a href="/compra" class="btn btn--outline reveal" data-delay="2">Ver todas las propiedades <Fragment set:html={ICO.flecha} /></a>
+      </div>
+
+      <div class="grid grid--3" id="gridDestacadas">
+        {propiedades.length > 0
+          ? propiedades.map(p => <Card p={p} />)
+          : <p class="lista-vacia">Pronto publicaremos nuevas propiedades.</p>}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NUESTROS SERVICIOS ============ -->
+  <section class="section" id="serviciosini">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Tres formas de <span class="text-gold">trabajar con nosotros</span></h2>
+        <p class="section__sub">Ya sea que busques comprar, vender o unirte a nuestro equipo, hay un camino pensado para ti.</p>
+      </div>
+
+      <div class="grid grid--3">
+        {SERVICIOS_INICIO.map(([t, d, b, h, foto], i) => (
+          <article class="sini reveal" data-delay={i}>
+            <img src={foto} alt="" loading="lazy">
+            <div class="sini__cuerpo">
+              <h3>{t}</h3>
+              <p>{d}</p>
+              <a href={h} class="btn btn--gold">{b} <Fragment set:html={ICO.flecha} /></a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PORTAFOLIO ============ -->
+  <section class="section" id="portafolio">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Propiedades para <span class="text-gold">diferentes necesidades</span></h2>
+      </div>
+
+      <div class="grid grid--4 portafolio">
+        {TIPOS.map(([v, l, d], i) => (
+          <article class="porta reveal" data-delay={i}>
+            <span class="porta__ico"><Fragment set:html={ICO_TIPO[v]} /></span>
+            <h3>{l}</h3>
+            <p>{d}</p>
+            <a href={`/resultados?tipo=${v}`} class="porta__link">Ver {l.toLowerCase()} <Fragment set:html={ICO.flecha} /></a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NUESTRO PROCESO ============ -->
+  <section class="section proceso-wrap" id="proceso">
+    <div class="container proceso__grid">
+      <div>
+        <div class="section__head">
+          <h2 class="section__title reveal" data-delay="1">Así te acompañamos,<br><span class="text-gold">paso a paso</span></h2>
+          <p class="section__sub reveal" data-delay="2">Desde la primera conversación hasta que las llaves sean tuyas, cada etapa está pensada para que decidas con tranquilidad.</p>
+        </div>
+        <ol class="jornada">
+          {JORNADA.map(([t, d], i) => (
+            <li class="jornada__paso reveal" data-delay={i + 2}>
+              <span class="jornada__num">{i + 1}</span>
+              <div>
+                <h3>{t}</h3>
+                <p>{d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class:list={['video-ph', 'reveal', videoInicio && 'video-ph--activo',
+                        videoInicio && videoVertical && 'video-ph--vertical']}
+           style={videoInicio ? `--video-ratio:${VIDEO_INICIO_PROPORCION}` : undefined}
+           data-delay="3">
+        {/* Sin `allowfullscreen` ni el permiso de pantalla completa: aunque el
+            reproductor de Drive dibuje el botón, el navegador le niega el
+            permiso y el atajo de teclado tampoco funciona. */}
+        {videoInicio ? (
+          <iframe class="video-ph__marco" src={videoInicio}
+                  title="Video institucional de Golden Home Group"
+                  loading="lazy" allow="autoplay"></iframe>
+        ) : (
+          <>
+            <img src="/assets/img/video-placa.webp"
+                 alt="" loading="lazy">
+            <span class="video-ph__play" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 7v10l9-5-9-5Z"/></svg>
+            </span>
+            <span class="video-ph__nota">Video institucional · próximamente</span>
+          </>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIOS ============ -->
+  <section class="section testimonios">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Confían en <span class="text-gold">Golden Home Group</span></h2>
+        <p class="section__sub reveal" data-delay="2">Historias de clientes que encontraron su propiedad ideal con nuestro acompañamiento.</p>
+      </div>
+
+      <div class="testi-carrusel reveal" id="testiCarrusel" data-delay="3">
+        <div class="testi-carrusel__track">
+          {TESTIMONIOS.map(([ini, texto, nombre, dato], i) => (
+            <figure class:list={['testi-grande', { 'is-active': i === 0 }]} aria-hidden={i === 0 ? undefined : 'true'}>
+              <div class="testi-grande__estrellas" aria-label="5 de 5 estrellas">
+                {Array(5).fill(0).map(() => <Fragment set:html={I.estrella} />)}
+              </div>
+              <blockquote>{texto}</blockquote>
+              <figcaption>
+                <span class="testi-grande__avatar">{ini}</span>
+                <div><strong>{nombre}</strong><span>{dato}</span></div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+
+        <button type="button" class="testi-nav testi-nav--prev" id="testiPrev" aria-label="Testimonio anterior">
+          <svg viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></svg>
+        </button>
+        <button type="button" class="testi-nav testi-nav--next" id="testiNext" aria-label="Testimonio siguiente">
+          <svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Las personas son la navegación: cada una lleva a su testimonio -->
+      <div class="confianza reveal" data-delay="4" role="tablist" aria-label="Elegir testimonio">
+        {TESTIMONIOS.map(([ini, , nombre, dato], i) => (
+          <button type="button" class:list={['confianza__persona', { 'is-active': i === 0 }]}
+                  data-i={i} role="tab" aria-selected={i === 0 ? 'true' : 'false'}>
+            <span class="confianza__avatar">{ini}</span>
+            <div><strong>{nombre}</strong><span>{dato}</span></div>
+          </button>
+        ))}
+      </div>
+
+      <div class="testimonios__cta reveal" data-delay="5">
+        <a href="/contacto" class="btn btn--gold btn--lg">Quiero ser el siguiente <Fragment set:html={ICO.flecha} /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SOBRE GOLDEN HOME GROUP ============ -->
+  <section class="section section--soft" id="sobre">
+    <div class="container dosco">
+      <div class="dosco__media reveal">
+        <img src="/assets/img/inicio-interior.webp"
+             alt="Interior de una propiedad del portafolio" loading="lazy">
+        <div class="dosco__badge"><strong>+8</strong><span>años de experiencia</span></div>
+      </div>
+      <div class="dosco__texto reveal" data-delay="1">
+        <h2 class="section__title">Más de 8 años creando<br><span class="text-gold">oportunidades inmobiliarias</span></h2>
+        <p>Golden Home Group es una empresa dedicada al sector inmobiliario, con más de 8 años de
+        experiencia y un portafolio compuesto por terrenos, casas, departamentos y locales.</p>
+        <p>Trabajamos con una visión orientada a la confianza, responsabilidad, transparencia y
+        atención personalizada.</p>
+        <p>Nuestro propósito es acompañar a nuestros clientes en la búsqueda de alternativas
+        inmobiliarias que respondan a sus necesidades.</p>
+        <a href="/nosotros" class="btn btn--outline">Conócenos <Fragment set:html={ICO.flecha} /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VENDE / SÉ UN AGENTE ============ -->
+  <section class="section duo">
+    <div class="container duo__grid">
+      <article class="duo__card duo__card--gold reveal">
+        <h2>¿Tienes una propiedad para vender?</h2>
+        <p>Si tienes un terreno, casa, departamento o local y estás buscando venderlo, ponte en
+        contacto con nuestro equipo. Te orientaremos sobre el proceso de comercialización de tu propiedad.</p>
+        <a href="/vende" class="btn btn--dark">Quiero vender mi propiedad <Fragment set:html={ICO.flecha} /></a>
+      </article>
+
+      <article class="duo__card duo__card--dark reveal" data-delay="1">
+        <h2>Crece con Golden Home Group</h2>
+        <p>Buscamos personas interesadas en desarrollarse dentro del sector inmobiliario y formar
+        parte de nuestro equipo de agentes.</p>
+        <a href="/agente" class="btn btn--gold">Quiero ser agente <Fragment set:html={ICO.flecha} /></a>
+      </article>
+    </div>
+  </section>
+
+  <Faq titulo='Resolvemos tus dudas<br><span class="text-gold">antes de dar el paso</span>'
+       intro="Las consultas que más nos hacen. Si la tuya no está aquí, escríbenos y te respondemos."
+       items={[
+         ['¿Qué tipo de propiedades ofrece Golden Home Group?', 'Contamos con terrenos, casas, departamentos y locales.'],
+         ['¿Cómo puedo conocer una propiedad?', 'Puedes revisar la información disponible en la ficha de cada inmueble y comunicarte con nuestro equipo para solicitar mayor información.'],
+         ['¿Puedo solicitar información por WhatsApp?', `Sí. Puedes comunicarte directamente con nuestro equipo mediante WhatsApp al ${TEL}.`],
+         ['¿Puedo registrar mi propiedad para venderla?', 'Sí. Ingresa a la sección Vende y completa el formulario con la información de tu propiedad.'],
+         ['¿Golden Home Group busca agentes inmobiliarios?', 'Sí. Las personas interesadas pueden ingresar a la sección Sé un agente y completar el formulario de postulación.'],
+         ['¿Cómo puedo contactar con Golden Home Group?', `Puedes comunicarte mediante WhatsApp al ${TEL} o utilizar nuestro formulario de contacto.`]
+       ]} />
+
+  <CtaFinal titulo="Tu próxima oportunidad inmobiliaria<br>puede comenzar aquí"
+            lineas={['¿Buscas comprar una propiedad?', '¿Quieres vender un inmueble?', '¿Te interesa formar parte de nuestro equipo?', 'Hablemos.']} />
+</Base>

@@ -1,0 +1,21 @@
+---
+/* Páginas legales: portada simple y bloques de texto. */
+import Hero from './Hero.astro';
+import { MAIL } from '../lib/config';
+
+interface Props {
+  titulo: string;
+  bloques: [string, string][];
+}
+const { titulo, bloques } = Astro.props;
+---
+<Hero titulo={titulo} />
+<section class="section">
+  <div class="container legal reveal">
+    {bloques.map(([h, p]) => (<><h2>{h}</h2><p>{p}</p></>))}
+    <p class="legal__nota">
+      Última actualización: enero de 2026. Ante cualquier duda escríbenos a
+      <a href={`mailto:${MAIL}`}>{MAIL}</a>.
+    </p>
+  </div>
+</section>

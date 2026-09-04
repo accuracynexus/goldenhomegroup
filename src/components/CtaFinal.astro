@@ -1,0 +1,23 @@
+---
+/* Cierre de página: una isla redondeada que flota sobre el blanco.
+   Sin el número escrito en grande — manda el botón. */
+import { ICO } from '../lib/iconos';
+
+interface Props {
+  titulo: string;
+  lineas?: string[];
+  boton?: string;
+}
+const { titulo, lineas = [], boton = 'Hablar por WhatsApp' } = Astro.props;
+---
+<section class="ctafinal">
+  <div class="container ctafinal__inner reveal">
+    <h2 set:html={titulo} />
+    {lineas.length > 0 && (
+      <ul class="ctafinal__lista">{lineas.map(l => <li>{l}</li>)}</ul>
+    )}
+    <a class="btn btn--wa btn--lg" href="#" data-wa="general" target="_blank" rel="noopener">
+      <Fragment set:html={ICO.wa} /> {boton}
+    </a>
+  </div>
+</section>

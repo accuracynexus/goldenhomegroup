@@ -1,0 +1,19 @@
+---
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Legal from '../components/Legal.astro';
+
+const bloques: [string, string][] = [
+  ['Sobre este sitio', 'Esta web es propiedad de Golden Home Group y tiene como finalidad presentar su portafolio inmobiliario y sus servicios. El uso del sitio implica la aceptación de estos términos.'],
+  ['Información de las propiedades', 'Los datos de cada propiedad (precio, área, características y fotografías) son referenciales y pueden variar sin previo aviso. No constituyen una oferta contractual: cualquier operación se formaliza mediante los documentos correspondientes.'],
+  ['Disponibilidad', 'La publicación de una propiedad no garantiza su disponibilidad. El estado de cada inmueble se actualiza periódicamente y puede cambiar entre una consulta y otra.'],
+  ['Uso del contenido', 'Los textos, imágenes y marcas presentes en el sitio pertenecen a Golden Home Group o a sus titulares. No está permitida su reproducción sin autorización previa.'],
+  ['Enlaces y servicios de terceros', 'El sitio enlaza a servicios externos como WhatsApp, Google Maps y redes sociales. Cada uno se rige por sus propios términos y políticas.'],
+  ['Contacto', 'Para consultas sobre estos términos puedes escribirnos por WhatsApp o al correo corporativo.']
+];
+---
+<Base titulo="Términos y condiciones | Golden Home Group"
+      descripcion="Condiciones de uso del sitio web de Golden Home Group.">
+  <Legal titulo="Términos y condiciones" bloques={bloques} />
+</Base>

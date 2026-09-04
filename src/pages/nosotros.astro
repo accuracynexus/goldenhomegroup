@@ -1,0 +1,117 @@
+---
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import { ICO, ICO_TIPO } from '../lib/iconos';
+import { VALORES, TIPOS } from '../lib/contenido';
+---
+<Base titulo="Nosotros | Golden Home Group"
+      descripcion="Más de 8 años de experiencia en el sector inmobiliario. Conoce nuestra misión, visión y valores.">
+
+  <Hero variante="memoria"
+        foto="/assets/img/hero-nosotros.webp"
+        titulo='Más de 8 años creando<br><span class="text-gold">oportunidades inmobiliarias</span>'
+        subtitulo="Una empresa peruana dedicada al sector inmobiliario, con presencia en Lima y Huancayo.">
+    <Fragment slot="botones">
+      <a href="/compra" class="btn btn--negro btn--lg">Ver propiedades <Fragment set:html={ICO.flecha} /></a>
+      <a href="/contacto" class="btn btn--ghost btn--lg">Conversemos</a>
+    </Fragment>
+    <figure class="phero__dato reveal" data-delay="2" slot="aside">
+      <strong>8+</strong>
+      <span>años acompañando decisiones inmobiliarias</span>
+      <ul>
+        {TIPOS.map(([v, l]) => <li><Fragment set:html={ICO_TIPO[v]} /> {l}</li>)}
+      </ul>
+    </figure>
+  </Hero>
+
+  <!-- ============ QUIÉNES SOMOS ============ -->
+  <section class="section" id="quienes">
+    <div class="container dosco">
+      <div class="dosco__texto reveal">
+        <h2 class="section__title">Una empresa dedicada<br><span class="text-gold">al sector inmobiliario</span></h2>
+        <p>Golden Home Group está enfocada en brindar alternativas de propiedad que respondan a las
+        diferentes necesidades de nuestros clientes.</p>
+        <p>Contamos con más de 8 años de experiencia y un portafolio de terrenos, casas,
+        departamentos y locales.</p>
+        <p>Nuestro trabajo se desarrolla bajo una visión orientada a la confianza, responsabilidad,
+        transparencia y compromiso. Buscamos brindar una atención cercana y profesional, acompañando
+        a nuestros clientes durante el proceso de búsqueda y adquisición de una propiedad.</p>
+        <a href="/compra" class="btn btn--outline">Ver propiedades <Fragment set:html={ICO.flecha} /></a>
+      </div>
+      <div class="dosco__media reveal" data-delay="1">
+        <img src="/assets/img/nosotros-propiedad.webp"
+             alt="Propiedad del portafolio de Golden Home Group" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MISIÓN Y VISIÓN ============ -->
+  <section class="section section--soft">
+    <div class="container mv">
+      <article class="mv__card reveal">
+        <span class="mv__label">Misión</span>
+        <h2>Brindar soluciones y oportunidades inmobiliarias</h2>
+        <p>Brindar soluciones y oportunidades inmobiliarias que respondan a las necesidades de
+        nuestros clientes, ofreciendo un servicio basado en la confianza, responsabilidad y
+        atención personalizada.</p>
+      </article>
+      <article class="mv__card mv__card--dark reveal" data-delay="1">
+        <span class="mv__label">Visión</span>
+        <h2>Crecer y consolidarnos como un aliado inmobiliario confiable</h2>
+        <p>Ser una empresa inmobiliaria reconocida por su profesionalismo, confianza y capacidad para
+        generar oportunidades dentro del mercado inmobiliario, fortaleciendo continuamente nuestras
+        relaciones con clientes, empresas y aliados estratégicos.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ VALORES ============ -->
+  <section class="section" id="valores">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Los pilares de <span class="text-gold">nuestro trabajo</span></h2>
+      </div>
+      <div class="grid grid--4">
+        {VALORES.map(([t, d, i], n) => (
+          <article class="valor reveal" data-delay={n}>
+            <span class="valor__ico"><Fragment set:html={i} /></span>
+            <h3>{t}</h3>
+            <p>{d}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPERIENCIA ============ -->
+  <section class="section experiencia">
+    <div class="container experiencia__inner">
+      <div class="experiencia__num reveal">
+        <strong data-count="8" data-suffix="+">0</strong>
+        <span>años de experiencia<br>en el sector inmobiliario</span>
+      </div>
+      <div class="experiencia__porta reveal" data-delay="1">
+        <h3>Nuestro portafolio</h3>
+        <ul>
+          {TIPOS.map(([v, l]) => (
+            <li><a href={`/resultados?tipo=${v}`}><Fragment set:html={ICO_TIPO[v]} />{l}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COMPROMISO ============ -->
+  <section class="section section--soft section--soft-top">
+    <div class="container compromiso reveal">
+      <h2 class="section__title">Cada oportunidad comienza<br><span class="text-gold">con una buena decisión</span></h2>
+      <p>Nuestro compromiso es continuar creciendo y fortaleciendo nuestra presencia en el sector
+      inmobiliario, manteniendo como pilares la confianza, responsabilidad y profesionalismo.</p>
+      <p>Queremos ser un aliado para nuestros clientes, aportando alternativas y acompañamiento en
+      cada nueva oportunidad.</p>
+      <a href="/contacto" class="btn btn--negro">Hablemos <Fragment set:html={ICO.flecha} /></a>
+    </div>
+  </section>
+</Base>

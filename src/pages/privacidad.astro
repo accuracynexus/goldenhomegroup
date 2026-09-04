@@ -1,0 +1,20 @@
+---
+/* No depende de la base: se genera una sola vez al compilar. */
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Legal from '../components/Legal.astro';
+
+const bloques: [string, string][] = [
+  ['Qué datos recogemos', 'Recogemos únicamente los datos que nos envías por los formularios de la web: nombre, teléfono, correo electrónico y el detalle de tu consulta. No recopilamos información sensible ni la obtenemos de terceros.'],
+  ['Para qué los usamos', 'Utilizamos tus datos para responder tu consulta, presentarte alternativas inmobiliarias y dar seguimiento comercial al pedido que nos hiciste. No los usamos para ninguna otra finalidad.'],
+  ['Con quién los compartimos', 'No vendemos ni cedemos tus datos. Solo acceden a ellos los integrantes del equipo de Golden Home Group que participan en la atención de tu consulta.'],
+  ['Cuánto tiempo los conservamos', 'Conservamos la información mientras dure la relación comercial y el tiempo adicional que exija la normativa aplicable.'],
+  ['Tus derechos', 'Puedes solicitar el acceso, la rectificación o la eliminación de tus datos escribiéndonos al correo de contacto. Atenderemos tu pedido en los plazos que establece la Ley N.º 29733 de Protección de Datos Personales.'],
+  ['Cookies', 'La web utiliza almacenamiento local del navegador solo para recordar las propiedades que marcas como favoritas. Esa información queda en tu equipo y no se envía a nuestros servidores.']
+];
+---
+<Base titulo="Política de privacidad | Golden Home Group"
+      descripcion="Cómo tratamos los datos que nos envías a través de la web.">
+  <Legal titulo="Política de privacidad" bloques={bloques} />
+</Base>

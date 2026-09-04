@@ -1,0 +1,26 @@
+# Dependencias y compilación
+node_modules/
+dist/
+.astro/
+
+# Datos reales: la base y las fotos subidas nunca van al repositorio
+data/
+uploads/
+
+# Secretos
+.env
+.env.local
+
+# Sitio anterior (respaldo de la migración)
+_legacy/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+respaldos/
+
+# Herramientas locales de Claude Code (no son parte del proyecto)
+.claude/
+.agents/

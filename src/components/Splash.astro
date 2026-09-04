@@ -1,0 +1,58 @@
+---
+/* Pantalla de bienvenida.
+
+   Aparece UNA vez por visita: al pasar a otra página del sitio ya no vuelve
+   a salir. Quien decide eso es el guion de <head> en Base.astro, que marca
+   el documento antes de pintar nada; acá solo va el contenido y el cierre.
+
+   El logo se precarga desde la cabeza del documento y se declara con su
+   tamaño real, así que no hay ni un fotograma con el hueco vacío ni salto
+   de maquetación cuando termina de descargarse. */
+---
+<div class="splash" id="splash" role="status" aria-label="Cargando el sitio de Golden Home Group">
+  <div class="splash__caja">
+    <img class="splash__logo"
+         src="/assets/img/logo-splash.webp"
+         alt="Golden Home Group · Inmobiliaria y Constructora"
+         width="900" height="400"
+         fetchpriority="high" decoding="sync">
+    <div class="splash__barra"><span class="splash__progreso"></span></div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    var splash = document.getElementById('splash');
+    if (!splash) return;
+
+    var raiz = document.documentElement;
+    var DESDE = Date.now();
+    /* Un mínimo en pantalla: con la página en caché el evento `load` llega a
+       los 80 ms y la bienvenida sería un parpadeo peor que no tenerla. */
+    var MINIMO = 900;
+
+    function cerrar() {
+      setTimeout(function () {
+        // La barra salta al 100 %: termina cuando la página está lista de
+        // verdad, no cuando se acaba una animación inventada.
+        splash.classList.add('is-listo');
+        try { sessionStorage.setItem('ghg_splash', '1'); } catch (e) {}
+
+        setTimeout(function () {
+          splash.classList.add('is-fuera');
+          setTimeout(function () {
+            splash.hidden = true;
+            raiz.classList.remove('splash-activo');   // devuelve el scroll
+          }, 480);
+        }, 240);
+      }, Math.max(0, MINIMO - (Date.now() - DESDE)));
+    }
+
+    if (document.readyState === 'complete') cerrar();
+    else window.addEventListener('load', cerrar);
+
+    /* Red de seguridad: si alguna imagen o el video de Drive se cuelgan, el
+       evento `load` puede no llegar nunca y la cortina se quedaría puesta. */
+    setTimeout(function () { if (!splash.hidden) cerrar(); }, 6000);
+  })();
+</script>

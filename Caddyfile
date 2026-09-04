@@ -1,0 +1,24 @@
+# ============================================================================
+# Caddy: entrada pública del sitio.
+# Pide y renueva el certificado HTTPS solo, sin configuración extra.
+# ============================================================================
+{$DOMINIO}, www.{$DOMINIO} {
+	encode zstd gzip
+
+	# Cabeceras de seguridad
+	header {
+		# Fuerza HTTPS durante un año en los navegadores que ya visitaron el sitio
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		# Impide que el sitio se muestre embebido en otra página (clickjacking)
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# El panel no debe aparecer en buscadores
+	@panel path /admin /admin/*
+	header @panel X-Robots-Tag "noindex, nofollow"
+
+	reverse_proxy web:4321
+}

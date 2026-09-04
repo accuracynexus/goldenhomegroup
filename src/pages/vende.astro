@@ -1,0 +1,130 @@
+---
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Formulario from '../components/Formulario.astro';
+import Faq from '../components/Faq.astro';
+import { ICO, I } from '../lib/iconos';
+import { QUE_HACEMOS, PASOS, DIFUSION } from '../lib/contenido';
+import { TEL } from '../lib/config';
+---
+<Base titulo="Vende tu propiedad | Golden Home Group"
+      descripcion="¿Tienes un terreno, casa, departamento o local para vender? Te acompañamos en el proceso de comercialización.">
+
+  <Hero variante="luz"
+        titulo='¿Tienes una propiedad<br><span class="text-gold">para vender?</span>'
+        subtitulo="Conecta tu inmueble con nuevas oportunidades. Te acompañamos desde la primera conversación hasta el cierre.">
+    <Fragment slot="botones">
+      <a href="#formulario" class="btn btn--gold btn--lg">Registrar mi propiedad <Fragment set:html={ICO.flecha} /></a>
+      <a href="#proceso" class="btn btn--ghost btn--lg">Ver cómo funciona</a>
+    </Fragment>
+    <div class="phero__ficha reveal" data-delay="2" slot="aside">
+      <h2>Qué necesitamos para empezar</h2>
+      <ul>
+        <li><Fragment set:html={I.etiqueta} /><span>Tipo de propiedad y ubicación</span></li>
+        <li><Fragment set:html={I.papel} /><span>Área aproximada y precio esperado</span></li>
+        <li><Fragment set:html={I.mapa} /><span>Fotografías del inmueble, si las tienes</span></li>
+        <li><Fragment set:html={I.chat} /><span>Un teléfono donde podamos escribirte</span></li>
+      </ul>
+    </div>
+  </Hero>
+
+  <!-- ============ QUÉ HACEMOS CON TU PROPIEDAD ============ -->
+  <section class="section">
+    <div class="container vende-que">
+      <div class="vende-que__texto reveal">
+        <h2 class="section__title">No solo la publicamos:<br><span class="text-gold">la comercializamos</span></h2>
+        <p>Registrar tu propiedad con nosotros no es dejarla en una lista. Entra a nuestro
+        portafolio, se difunde por nuestros canales y la presentamos a compradores que ya
+        nos dijeron qué buscan.</p>
+        <div class="vende-que__dato">
+          <strong>+8</strong>
+          <span>años comercializando terrenos, casas,<br>departamentos y locales</span>
+        </div>
+      </div>
+
+      <ul class="vende-que__lista reveal" data-delay="1">
+        {QUE_HACEMOS.map(t => <li><Fragment set:html={I.escudo} /><span>{t}</span></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ CÓMO FUNCIONA ============ -->
+  <section class="section section--soft" id="proceso">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">De la primera conversación <span class="text-gold">a la publicación</span></h2>
+        <p class="section__sub reveal" data-delay="2">Cuatro pasos, sin vueltas. Empiezas tú y el resto lo coordinamos nosotros.</p>
+      </div>
+      <ol class="ruta">
+        {PASOS.map(([t, d], i) => (
+          <li class="ruta__paso reveal" data-delay={i}>
+            <span class="ruta__num">{i + 1}</span>
+            <h3>{t}</h3>
+            <p>{d}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ DÓNDE LLEGA TU PROPIEDAD ============ -->
+  <section class="section vende-difusion">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Dónde llega <span class="text-gold">tu propiedad</span></h2>
+        <p class="section__sub reveal" data-delay="2">Estos son los canales por los que circula una vez publicada.</p>
+      </div>
+
+      <div class="difusion">
+        {DIFUSION.map(([t, d, ico, href], i) => {
+          const icono = ICO[ico] || I[ico];
+          const externo = href && href.startsWith('http');
+          const Etiqueta = href ? 'a' : 'div';
+          return (
+            <Etiqueta class:list={['difusion__item', { 'difusion__item--plano': !href }]}
+                      data-delay={i}
+                      href={href || undefined}
+                      target={externo ? '_blank' : undefined}
+                      rel={externo ? 'noopener' : undefined}>
+              <span class="difusion__ico"><Fragment set:html={icono} /></span>
+              <div>
+                <h3>{t}{href && <Fragment set:html={ICO.flecha} />}</h3>
+                <p>{d}</p>
+              </div>
+            </Etiqueta>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <Formulario
+    id="formPropietario"
+    titulo="Cuéntanos sobre tu propiedad"
+    intro="Completa los datos y nuestro equipo se comunicará contigo para continuar el proceso."
+    tituloWa="Registro de propiedad para venta"
+    boton="Quiero vender mi propiedad"
+    nota="Las fotografías puedes enviarlas directamente en el chat de WhatsApp."
+    campos={[
+      { id: 'pr-nombre', name: 'Nombre completo', label: 'Nombre completo', required: true, placeholder: 'Ingresa tu nombre' },
+      { id: 'pr-wsp', name: 'Teléfono / WhatsApp', label: 'Teléfono / WhatsApp', tipo: 'tel', required: true, placeholder: '+51 900 000 000' },
+      { id: 'pr-mail', name: 'Correo', label: 'Correo electrónico', tipo: 'email', placeholder: 'tucorreo@ejemplo.com' },
+      { id: 'pr-tipo', name: 'Tipo de propiedad', label: 'Tipo de propiedad', tipo: 'select', required: true, opciones: ['Terreno', 'Casa', 'Departamento', 'Local'] },
+      { id: 'pr-ubi', name: 'Ubicación', label: 'Ubicación', required: true, placeholder: 'Distrito, ciudad' },
+      { id: 'pr-area', name: 'Área aproximada', label: 'Área aproximada', placeholder: 'm²' },
+      { id: 'pr-precio', name: 'Precio esperado', label: 'Precio esperado', placeholder: 'S/' },
+      { id: 'pr-fotos', name: 'fotos', label: 'Fotografías', tipo: 'file', multiple: true, accept: 'image/*', ayuda: 'Opcional. Podrás adjuntarlas en el chat al enviar.' },
+      { id: 'pr-msg', name: 'Mensaje', label: 'Mensaje', tipo: 'textarea', ancho: 'full', placeholder: 'Cuéntanos más sobre tu propiedad' }
+    ]} />
+
+  <Faq titulo='Preguntas sobre <span class="text-gold">la venta</span>'
+       items={[
+         ['¿Qué tipo de propiedades puedo vender con Golden Home Group?', 'Trabajamos con terrenos, casas, departamentos y locales.'],
+         ['¿Cómo registro mi propiedad?', 'Completa el formulario de esta página con los datos básicos del inmueble.'],
+         ['¿Qué información necesitan?', 'Datos como tipo de propiedad, ubicación, área, precio esperado y fotografías.'],
+         ['¿Qué sucede después de enviar el formulario?', 'Nuestro equipo revisará la información y se pondrá en contacto contigo.'],
+         ['¿Puedo comunicarme directamente?', `Sí. Puedes escribirnos por WhatsApp al ${TEL}.`]
+       ]} />
+</Base>

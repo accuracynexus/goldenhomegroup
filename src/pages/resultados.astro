@@ -1,0 +1,61 @@
+---
+/* Listado filtrado. Se arma en el servidor a partir de la URL, así el
+   resultado de una búsqueda se puede compartir y los buscadores lo ven. */
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Buscador from '../components/Buscador.astro';
+import Card from '../components/Card.astro';
+import CtaFinal from '../components/CtaFinal.astro';
+import { filtrar, type Filtros } from '../lib/db';
+
+const q = Astro.url.searchParams;
+const num = (k: string) => q.has(k) ? Number(q.get(k)) : undefined;
+
+const filtros: Filtros = {
+  tipo: q.get('tipo') || undefined,
+  operacion: q.get('operacion') || undefined,
+  ubicacion: q.get('ubicacion') || undefined,
+  precioMin: num('precioMin'),
+  precioMax: num('precioMax'),
+  areaMin: num('areaMin'),
+  areaMax: num('areaMax')
+};
+
+const resultados = filtrar(filtros);
+
+// Para que el buscador se vuelva a dibujar con lo que el visitante eligió
+const valores = Object.fromEntries(q.entries());
+const hayFiltros = Object.values(filtros).some(v => v !== undefined && v !== '');
+
+const conteo = resultados.length === 1
+  ? '1 propiedad disponible'
+  : `${resultados.length} propiedades disponibles`;
+---
+<Base titulo="Resultados de tu búsqueda | Golden Home Group"
+      descripcion="Filtra terrenos, casas, departamentos y locales en Lima y Huancayo y encuentra la propiedad que se adapte a lo que buscas.">
+
+  <Hero titulo="Resultados de tu búsqueda"
+        subtitulo="Ajusta los filtros para encontrar la propiedad que se adapte a lo que buscas." />
+
+  <Buscador id="buscador" accion="/resultados" limpiar={hayFiltros} valores={valores} />
+
+  <!-- ============ RESULTADOS ============ -->
+  <section class="section section--soft" id="resultados">
+    <div class="container">
+      <div class="section__head section__head--split">
+        <div>
+          <h2 class="section__title reveal" data-delay="1">Propiedades <span class="text-gold">disponibles</span></h2>
+        </div>
+        <p class="contador reveal" data-delay="2" id="contadorResultados">{conteo}</p>
+      </div>
+
+      <div class="grid grid--3" id="gridResultados">
+        {resultados.length > 0
+          ? resultados.map(p => <Card p={p} />)
+          : <p class="lista-vacia">No hay propiedades que coincidan con tu búsqueda.</p>}
+      </div>
+    </div>
+  </section>
+
+  <CtaFinal titulo="¿No encontraste lo que<br>estabas buscando?" boton="Hablar con un asesor" />
+</Base>

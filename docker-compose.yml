@@ -1,0 +1,48 @@
+# ============================================================================
+# Despliegue en el VPS.
+#
+#   web    → el sitio Astro (Node), solo accesible desde adentro
+#   caddy  → recibe el tráfico público y gestiona el certificado HTTPS solo
+#
+# Arrancar:   docker compose up -d --build
+# Ver logs:   docker compose logs -f web
+# Actualizar: git pull && docker compose up -d --build
+# ============================================================================
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      # Secreto de las sesiones del panel. OBLIGATORIO en producción:
+      # se define en el archivo .env, nunca acá.
+      AUTH_SECRET: ${AUTH_SECRET:?Falta AUTH_SECRET. Genera uno con: openssl rand -hex 32}
+      SITE_URL: ${SITE_URL:-https://goldenhomegroup.com}
+      NODE_ENV: production
+    volumes:
+      # La base y las fotos viven fuera del contenedor: al desplegar una
+      # versión nueva, los datos siguen intactos.
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    # Sin "ports": solo Caddy puede alcanzarlo, nunca internet directamente
+    expose:
+      - "4321"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMINIO: ${DOMINIO:?Falta DOMINIO (por ejemplo: goldenhomegroup.com)}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data      # certificados: sin esto se re-emiten en cada reinicio
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:

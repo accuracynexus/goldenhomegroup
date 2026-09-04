@@ -1,0 +1,102 @@
+---
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Campo from '../components/Campo.astro';
+import { ICO, I } from '../lib/iconos';
+import { TEL, MAIL, REDES, SEDES, EMPRESA } from '../lib/config';
+
+const mapa = (q: string) => `https://www.google.com/maps?q=${encodeURIComponent(q)}&output=embed`;
+---
+<Base titulo="Contacto | Golden Home Group"
+      descripcion="Escríbenos por WhatsApp al +51 936 342 373 o envíanos tu consulta desde el formulario.">
+
+  <Hero variante="blanco"
+        titulo='Hablemos de<br><span class="text-gold">nuevas oportunidades</span>'
+        subtitulo="Escríbenos para encontrar una propiedad, vender un inmueble o sumarte al equipo.">
+    <div class="phero__canales reveal" data-delay="2" slot="extra">
+      <a href="tel:+51936342373"><Fragment set:html={ICO.tel} /> Llamar ahora</a>
+      <a href="#" data-wa="general" target="_blank" rel="noopener"><Fragment set:html={I.wa} /> Escribir por WhatsApp</a>
+      <a href={`mailto:${MAIL}`}><Fragment set:html={I.correo} /> {MAIL}</a>
+      <a href="#formulario"><Fragment set:html={I.papel} /> Ir al formulario</a>
+    </div>
+  </Hero>
+
+  <!-- ============ CONTACTO: FORMULARIO + INFO ============ -->
+  <section class="section" id="formulario">
+    <div class="container contacto-grid">
+      <div class="contacto-form reveal">
+        <form class="form" id="formContacto" data-form-titulo="Consulta desde la web" novalidate>
+          <div class="form__grid">
+            <Campo id="c-nombre" name="Nombre completo" label="Nombre completo" required placeholder="Ej. Juan Pérez" />
+            <Campo id="c-mail" name="Correo" label="Correo electrónico" tipo="email" placeholder="tucorreo@ejemplo.com" />
+            <Campo id="c-tel" name="Celular" label="Celular" tipo="tel" required placeholder="Ej. +51 999 999 999" />
+            <Campo id="c-motivo" name="Motivo de contacto" label="¿Qué servicio necesitas?" tipo="select" required
+                   opciones={['Quiero comprar', 'Quiero vender', 'Quiero alquilar', 'Quiero ser agente', 'Consulta general']} />
+            <Campo id="c-mensaje" name="Mensaje" label="Mensaje (opcional)" tipo="textarea" ancho="full"
+                   placeholder="Cuéntanos más sobre lo que buscas" />
+          </div>
+
+          <label class="form__check">
+            <input type="checkbox">
+            <span>He leído y acepto la <a href="/privacidad" target="_blank">Política de Privacidad</a>.</span>
+          </label>
+
+          <div class="form__foot">
+            <button type="submit" class="btn btn--gold btn--lg btn--block">
+              Enviar mensaje <Fragment set:html={ICO.flecha} />
+            </button>
+          </div>
+          <p class="form__ok" hidden>Abrimos WhatsApp con tu consulta. Si no se abrió, escríbenos al {TEL}.</p>
+        </form>
+      </div>
+
+      <div class="contacto-info reveal" data-delay="1">
+        <h2 class="section__title">¿En qué podemos <span class="text-gold">ayudarte?</span></h2>
+        <p class="section__sub">Completa el formulario y nuestro equipo te responderá a la brevedad,
+        o escríbenos directo por cualquiera de estos medios.</p>
+
+        <ul class="contacto-info__lista">
+          {SEDES.map(s => <li><Fragment set:html={ICO.lugar} /><span>{s.direccion}</span></li>)}
+          <li><Fragment set:html={ICO.tel} /><a href="tel:+51936342373">{TEL}</a></li>
+          <li><Fragment set:html={ICO.mail} /><a href={`mailto:${MAIL}`}>{MAIL}</a></li>
+        </ul>
+
+        <div class="contacto-info__redes">
+          <a href={REDES.facebook} target="_blank" rel="noopener" aria-label="Facebook"><Fragment set:html={ICO.fb} /></a>
+          <a href={REDES.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Fragment set:html={ICO.ig} /></a>
+          <a href="#" data-wa="general" target="_blank" rel="noopener" aria-label="WhatsApp"><Fragment set:html={I.wa} /></a>
+          <a href={REDES.tiktok} target="_blank" rel="noopener" aria-label="TikTok"><Fragment set:html={ICO.tt} /></a>
+        </div>
+
+        <div class="contacto-info__mapas">
+          {SEDES.map(s => (
+            <div class="mapa-mini">
+              <span class="mapa-mini__tag">{s.nombre}</span>
+              <iframe src={mapa(s.direccion)} title={`Ubicación de la oficina en ${s.ciudad}`}
+                      loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ REDES E INFORMACIÓN ============ -->
+  <section class="section corporativa-wrap">
+    <div class="container corporativa reveal">
+      <div>
+        <h2 class="section__title">{EMPRESA.nombre}</h2>
+        <p class="corporativa__lema">{EMPRESA.lema}</p>
+        <p class="corporativa__porta">{EMPRESA.portafolio}</p>
+        <a class="corporativa__tel" href="tel:+51936342373">{TEL}</a>
+      </div>
+      <div class="corporativa__redes">
+        <a href={REDES.facebook} target="_blank" rel="noopener"><Fragment set:html={ICO.fb} /><span>Facebook</span></a>
+        <a href={REDES.instagram} target="_blank" rel="noopener"><Fragment set:html={ICO.ig} /><span>Instagram</span></a>
+        <a href={REDES.tiktok} target="_blank" rel="noopener"><Fragment set:html={ICO.tt} /><span>TikTok</span></a>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,23 @@
+---
+/* Fondo atmosférico de las portadas.
+
+   Las capas usan mix-blend-mode, que compone contra lo que hay DETRÁS del
+   elemento. Por eso el contenedor no lleva fondo propio: el color base lo
+   pone `body`. Si se le pusiera un `background` acá, las capas mezclarían
+   contra ese color y el efecto saldría lavado.
+
+   El contenido va en el slot y queda por encima gracias a la regla
+   `.aura > *:not(.aura__capa){ z-index:1 }`.
+
+   El grano es un mosaico de 160px pintado desde CSS, no un <svg> a pantalla
+   completa: el ruido procedural se genera una vez y se repite. */
+interface Props { clase?: string; }
+const { clase = '' } = Astro.props;
+---
+<div class:list={['aura', clase]}>
+  <div class="aura__capa aura__capa--1" aria-hidden="true"></div>
+  <div class="aura__capa aura__capa--2" aria-hidden="true"></div>
+  <div class="aura__capa aura__capa--3" aria-hidden="true"></div>
+  <div class="aura__capa aura__grano" aria-hidden="true"></div>
+  <slot />
+</div>

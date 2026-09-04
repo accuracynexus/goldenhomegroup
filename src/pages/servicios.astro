@@ -1,0 +1,63 @@
+---
+export const prerender = true;
+
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Faq from '../components/Faq.astro';
+import CtaFinal from '../components/CtaFinal.astro';
+import { ICO, I } from '../lib/iconos';
+import { SERVICIOS } from '../lib/contenido';
+
+const nombresIndice = ['Compra', 'Venta', 'Alquiler', 'Asesoría', 'Inversión'];
+---
+<Base titulo="Servicios inmobiliarios | Golden Home Group"
+      descripcion="Compra, venta, alquiler, asesoría inmobiliaria y oportunidades de inversión.">
+
+  <Hero variante="minimo"
+        titulo='Soluciones <span class="text-gold">inmobiliarias</span>'
+        subtitulo="Desde la búsqueda de una propiedad hasta su comercialización, acompañamos cada oportunidad con experiencia y compromiso.">
+    <nav class="phero__indice reveal" data-delay="3" aria-label="Nuestros servicios" slot="extra">
+      {SERVICIOS.map(([slug, , , , , , ico], i) => (
+        <a href={`#servicio-${slug}`}><Fragment set:html={I[ico]} /> {nombresIndice[i]}</a>
+      ))}
+    </nav>
+  </Hero>
+
+  <!-- ============ SERVICIOS ============ -->
+  <section class="section" id="servicios">
+    <div class="container">
+      <div class="section__head section__head--center">
+        <h2 class="section__title reveal" data-delay="1">Todo lo que necesitas <span class="text-gold">en un solo lugar</span></h2>
+      </div>
+
+      <div class="servicios">
+        {SERVICIOS.map(([slug, t, d, b, h, wa, ico], i) => (
+          <article class="servicio reveal" id={`servicio-${slug}`} data-delay={i % 3}>
+            <span class="servicio__ico"><Fragment set:html={I[ico]} /></span>
+            <div class="servicio__texto">
+              <h3>{t}</h3>
+              <p set:html={d} />
+            </div>
+            <a class:list={['btn', wa ? 'btn--wa' : 'btn--outline', 'servicio__btn']}
+               href={h}
+               data-wa={wa ? 'asesor' : undefined}
+               target={wa ? '_blank' : undefined}
+               rel={wa ? 'noopener' : undefined}>
+              {wa && <Fragment set:html={I.wa} />} {b} {!wa && <Fragment set:html={ICO.flecha} />}
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <Faq titulo='Preguntas sobre <span class="text-gold">nuestros servicios</span>'
+       items={[
+         ['¿Qué propiedades comercializa Golden Home Group?', 'Terrenos, casas, departamentos y locales.'],
+         ['¿Puedo solicitar asesoría?', 'Sí. Puedes comunicarte con nuestro equipo mediante WhatsApp o nuestro formulario de contacto.'],
+         ['¿Puedo vender mi propiedad con ustedes?', 'Sí. Puedes registrar tu propiedad desde la sección Vende.'],
+         ['¿Cómo puedo conocer las propiedades disponibles?', 'Ingresa a la sección Compra.']
+       ]} />
+
+  <CtaFinal titulo="¿Conversamos sobre<br>tu próximo paso?" boton="Hablar por WhatsApp" />
+</Base>

@@ -1,0 +1,176 @@
+---
+/* Buscador de propiedades.
+
+   A diferencia del sitio anterior, los topes de las barras de precio y área
+   los calcula el SERVIDOR con los valores reales de la base: el navegador ya
+   no descarga el catálogo entero para averiguarlos.
+
+   El formulario se envía por GET, así el resultado queda en una URL que se
+   puede compartir y los buscadores pueden seguir. */
+import { TIPOS, OPERACIONES } from '../lib/config';
+import { rangoDe, ubicaciones } from '../lib/db';
+import { ICO } from '../lib/iconos';
+
+interface Props {
+  id?: string;
+  titulo?: string;
+  accion?: string;      // a dónde envía (por defecto, la misma página)
+  limpiar?: boolean;    // muestra el enlace "Limpiar filtros"
+  textoBoton?: string;
+  valores?: Record<string, string>;
+}
+const {
+  id = 'buscador',
+  titulo = '¿Qué estás buscando?',
+  accion = '/resultados',
+  limpiar = false,
+  textoBoton = 'Buscar',
+  valores = {}
+} = Astro.props;
+
+const precio = rangoDe('precio');
+const area = rangoDe('area');
+
+/** Topes redondeados hacia afuera, para que la barra abarque todo el rango. */
+function topes(r: { min: number; max: number }, paso: number) {
+  return {
+    min: r.min ? Math.floor(r.min / paso) * paso : 0,
+    max: r.max ? Math.ceil(r.max / paso) * paso : paso,
+    paso
+  };
+}
+const tp = topes(precio, 1000);
+const ta = topes(area, 10);
+
+// Si la URL ya traía filtros, la barra arranca donde el visitante la dejó
+const v = (k: string, def: number) => Number(valores[k] ?? def);
+const zonas = ubicaciones();
+---
+<section class="section section--tight buscador-wrap">
+  <div class="container">
+    <form class="buscador reveal" id={id} method="get" action={accion}>
+      <h2 class="buscador__titulo">{titulo}</h2>
+
+      <div class="buscador__grid">
+        <div class="buscador__campo">
+          <label for={`${id}-operacion`}>Operación</label>
+          <select id={`${id}-operacion`} name="operacion">
+            <option value="">Comprar y alquilar</option>
+            {Object.entries(OPERACIONES).map(([k, o]) => (
+              <option value={k} selected={valores.operacion === k}>{o.verbo}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="buscador__campo">
+          <label for={`${id}-tipo`}>Tipo de propiedad</label>
+          <select id={`${id}-tipo`} name="tipo">
+            <option value="">Todos</option>
+            {Object.entries(TIPOS).map(([k, t]) => (
+              <option value={k} selected={valores.tipo === k}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="buscador__campo">
+          <label for={`${id}-ubicacion`}>Ubicación</label>
+          <select id={`${id}-ubicacion`} name="ubicacion">
+            <option value="">Todas las ubicaciones</option>
+            {zonas.map(z => <option value={z} selected={valores.ubicacion === z}>{z}</option>)}
+          </select>
+        </div>
+
+        <div class="buscador__campo buscador__campo--rango">
+          <div class="rango__head">
+            <span class="rango__label">Precio</span>
+            <span class="rango__valores"><b data-out="min">—</b><i>–</i><b data-out="max">—</b></span>
+          </div>
+          <div class="rango" data-campo="precio" data-formato="precio">
+            <div class="rango__pista"><div class="rango__relleno"></div></div>
+            <input type="range" class="rango__input rango__input--min" name="precioMin"
+                   min={tp.min} max={tp.max} step={tp.paso} value={v('precioMin', tp.min)}
+                   data-tope0={tp.min} data-tope1={tp.max} aria-label="Precio mínimo">
+            <input type="range" class="rango__input rango__input--max" name="precioMax"
+                   min={tp.min} max={tp.max} step={tp.paso} value={v('precioMax', tp.max)}
+                   data-tope0={tp.min} data-tope1={tp.max} aria-label="Precio máximo">
+          </div>
+        </div>
+
+        <div class="buscador__campo buscador__campo--rango">
+          <div class="rango__head">
+            <span class="rango__label">Área</span>
+            <span class="rango__valores"><b data-out="min">—</b><i>–</i><b data-out="max">—</b></span>
+          </div>
+          <div class="rango" data-campo="area" data-formato="area">
+            <div class="rango__pista"><div class="rango__relleno"></div></div>
+            <input type="range" class="rango__input rango__input--min" name="areaMin"
+                   min={ta.min} max={ta.max} step={ta.paso} value={v('areaMin', ta.min)}
+                   data-tope0={ta.min} data-tope1={ta.max} aria-label="Área mínima">
+            <input type="range" class="rango__input rango__input--max" name="areaMax"
+                   min={ta.min} max={ta.max} step={ta.paso} value={v('areaMax', ta.max)}
+                   data-tope0={ta.min} data-tope1={ta.max} aria-label="Área máxima">
+          </div>
+        </div>
+      </div>
+
+      <div class="buscador__acciones">
+        {limpiar && <a class="buscador__limpiar" href={accion}>Limpiar filtros</a>}
+        <button type="submit" class="btn btn--negro buscador__btn">
+          {textoBoton} <Fragment set:html={ICO.flecha} />
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  /* Barras de doble manija. Los topes vienen del servidor en data-tope*.
+     Un rango que sigue en sus topes no se envía, para no excluir propiedades
+     que aún no tienen ese dato cargado. */
+  document.querySelectorAll<HTMLElement>('.rango').forEach(campo => {
+    const inpMin = campo.querySelector<HTMLInputElement>('.rango__input--min')!;
+    const inpMax = campo.querySelector<HTMLInputElement>('.rango__input--max')!;
+    const relleno = campo.querySelector<HTMLElement>('.rango__relleno')!;
+    const caja = campo.closest('.buscador__campo--rango')!;
+    const outMin = caja.querySelector<HTMLElement>('[data-out="min"]')!;
+    const outMax = caja.querySelector<HTMLElement>('[data-out="max"]')!;
+
+    const tope0 = Number(inpMin.dataset.tope0), tope1 = Number(inpMin.dataset.tope1);
+    const esArea = campo.dataset.formato === 'area';
+    const fmt = (n: number) => n.toLocaleString('es-PE') + (esArea ? ' m²' : '');
+
+    const pintar = () => {
+      let a = Number(inpMin.value), b = Number(inpMax.value);
+      if (a > b) {
+        if (document.activeElement === inpMax) inpMin.value = String(a = b);
+        else inpMax.value = String(b = a);
+      }
+      const total = (tope1 - tope0) || 1;
+      relleno.style.left = `${((a - tope0) / total) * 100}%`;
+      relleno.style.right = `${100 - ((b - tope0) / total) * 100}%`;
+      outMin.textContent = fmt(a);
+      outMax.textContent = fmt(b);
+    };
+
+    inpMin.addEventListener('input', pintar);
+    inpMax.addEventListener('input', pintar);
+    pintar();
+
+    /* Antes de enviar, se desactivan los rangos que nadie tocó: así no
+       aparecen en la URL ni recortan resultados sin querer. */
+    campo.closest('form')?.addEventListener('submit', () => {
+      if (Number(inpMin.value) === tope0 && Number(inpMax.value) === tope1) {
+        inpMin.disabled = inpMax.disabled = true;
+      }
+    });
+  });
+
+  /* Los desplegables vacíos tampoco viajan a la URL */
+  document.querySelectorAll<HTMLFormElement>('.buscador').forEach(form => {
+    form.addEventListener('submit', () => {
+      form.querySelectorAll<HTMLSelectElement>('select').forEach(s => {
+        if (!s.value) s.disabled = true;
+      });
+    });
+  });
+</script>

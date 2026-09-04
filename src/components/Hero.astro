@@ -1,0 +1,52 @@
+---
+/* Portada de página interna. Cada página tiene su variante, con fondo y
+   composición propios (sección 8b de global.css):
+     memoria · claro · luz · minimo · equipo · blanco
+   `aside` es el bloque de apoyo; `extra` va debajo del texto. */
+interface Props {
+  variante?: string;
+  titulo: string;
+  subtitulo?: string;
+  texto?: string;
+  foto?: string;
+}
+const { variante = '', titulo, subtitulo, texto, foto } = Astro.props;
+
+const columnas = ['memoria', 'luz', 'equipo', 'blanco'].some(v => variante.includes(v));
+/* Contacto es la única portada donde `extra` ocupa TODA la fila
+   (grid-column:1/-1 en .phero__canales): si queda anidado dentro de
+   .phero__col hereda el ancho de esa columna y la regla no tiene efecto. */
+const extraFuera = variante.includes('blanco');
+const tieneExtra = Astro.slots.has('extra');
+
+/* Las portadas sin fotografía llevan la aurora: es su fondo. Donde hay foto
+   a sangre, el degradado competiría con la imagen.
+   El grano lo pinta el CSS como mosaico, así que acá solo van los divs. */
+const conAura = !foto;
+---
+<section class:list={['phero', variante && `phero--${variante}`, { 'aura': conAura }]}>
+  {conAura && (
+    <>
+      <div class="aura__capa aura__capa--1" aria-hidden="true"></div>
+      <div class="aura__capa aura__capa--2" aria-hidden="true"></div>
+      <div class="aura__capa aura__capa--3" aria-hidden="true"></div>
+      <div class="aura__capa aura__grano" aria-hidden="true"></div>
+    </>
+  )}
+  {foto && (
+    <div class="phero__foto" aria-hidden="true"><img src={foto} alt="" loading="eager"></div>
+  )}
+  <div class="container phero__inner">
+    <div class={columnas ? 'phero__col' : undefined}>
+      <h1 class="phero__title reveal" data-delay="1" set:html={titulo} />
+      {subtitulo && <p class="phero__sub reveal" data-delay="2" set:html={subtitulo} />}
+      {texto && <p class="phero__text reveal" data-delay="3" set:html={texto} />}
+      {Astro.slots.has('botones') && (
+        <div class="phero__botones reveal" data-delay="4"><slot name="botones" /></div>
+      )}
+      {tieneExtra && !extraFuera && <slot name="extra" />}
+    </div>
+    <slot name="aside" />
+    {tieneExtra && extraFuera && <slot name="extra" />}
+  </div>
+</section>

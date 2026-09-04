@@ -1,0 +1,123 @@
+---
+/* Barra superior, cabecera con menú y panel de favoritos.
+   Se repite en todas las páginas del sitio público. */
+import { MENU, TEL, TEL_DIGITOS, MAIL, REDES, SEDES } from '../lib/config';
+import { ICO, ICO_MENU } from '../lib/iconos';
+
+const { ruta = '/' } = Astro.props;
+
+/* Páginas que no están en el menú pero pertenecen a una sección: entrar a
+   una ficha o al buscador debe seguir resaltando "Compra". */
+const PADRE: Record<string, string> = {
+  '/propiedad': '/compra',
+  '/resultados': '/compra'
+};
+
+/* La ruta llega de tres formas según cómo se sirva la página: "/compra",
+   "/compra.html" (el build usa format:'file') o "/compra/". Se normaliza a
+   una sola antes de comparar. */
+const limpia = ruta.replace(/\.html$/, '').replace(/\/index$/, '').replace(/(.)\/$/, '$1') || '/';
+const seccion = PADRE[limpia] || limpia;
+
+/** Marca la opción del menú que corresponde a la página actual. */
+const activo = (href: string) =>
+  href === '/' ? seccion === '/' : seccion === href || seccion.startsWith(href + '/');
+---
+
+<!-- ============ BARRA SUPERIOR ============ -->
+<div class="topbar">
+  <div class="container topbar__inner topbar__desktop">
+    <ul class="topbar__list">
+      <li><Fragment set:html={ICO.mail} /><a href={`mailto:${MAIL}`}>{MAIL}</a></li>
+      <li><Fragment set:html={ICO.lugar} /><span>{SEDES[0].corta}</span></li>
+      <li class="topbar__sede2"><Fragment set:html={ICO.lugar} /><span>{SEDES[1].corta}</span></li>
+    </ul>
+    <ul class="topbar__list topbar__list--right">
+      <li><a href={`tel:${TEL_DIGITOS}`}><Fragment set:html={ICO.tel} />{TEL}</a></li>
+      <li class="topbar__social">
+        <a href={REDES.facebook} target="_blank" rel="noopener" aria-label="Facebook"><Fragment set:html={ICO.fb} /></a>
+        <a href={REDES.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Fragment set:html={ICO.ig} /></a>
+        <a href={REDES.tiktok} target="_blank" rel="noopener" aria-label="TikTok"><Fragment set:html={ICO.tt} /></a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="topbar__mobile" aria-label="Información de contacto" role="region">
+    <div class="topbar__track">
+      {[0, 1].map(i => (
+        <div class="topbar__group" aria-hidden={i ? 'true' : undefined}>
+          <span><Fragment set:html={ICO.mail} /><a href={`mailto:${MAIL}`}>{MAIL}</a></span>
+          <span><Fragment set:html={ICO.tel} /><a href={`tel:${TEL_DIGITOS}`}>{TEL}</a></span>
+          <span><Fragment set:html={ICO.lugar} />{SEDES[0].corta}</span>
+          <span><Fragment set:html={ICO.lugar} />{SEDES[1].corta}</span>
+          <span class="topbar__social">
+            <a href={REDES.facebook} target="_blank" rel="noopener" aria-label="Facebook"><Fragment set:html={ICO.fb} /></a>
+            <a href={REDES.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Fragment set:html={ICO.ig} /></a>
+            <a href={REDES.tiktok} target="_blank" rel="noopener" aria-label="TikTok"><Fragment set:html={ICO.tt} /></a>
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<!-- ============ CABECERA ============ -->
+<header class="header" id="header">
+  <div class="container header__inner">
+    <a href="/" class="logo" aria-label="Golden Home Group — inicio">
+      <img src="/assets/img/logo-white.png" width="1774" height="887"
+           alt="Golden Home Group — Inmobiliaria">
+    </a>
+
+    <nav class="nav" id="nav" aria-label="Menú principal">
+      <button class="nav__close" id="navClose" aria-label="Cerrar menú">&times;</button>
+      <ul class="nav__list">
+        {MENU.map(([href, texto], i) => (
+          <li>
+            <a class:list={['nav__link', { 'is-active': activo(href) }]} href={href}>
+              <Fragment set:html={ICO_MENU[i]} />{texto}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a href="/vende" class="btn btn--gold nav__cta">Quiero vender</a>
+    </nav>
+
+    <div class="header__actions">
+      <button class="favbtn" id="favBtn" aria-label="Ver mis favoritos" aria-expanded="false" aria-controls="favsPanel">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/></svg>
+        <span class="favbtn__badge" id="favCount" hidden>0</span>
+      </button>
+      <a href="/vende" class="btn btn--gold header__cta">Quiero vender <Fragment set:html={ICO.flecha} /></a>
+      <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+<div class="nav-overlay" aria-hidden="true"></div>
+
+<!-- ============ PANEL DE FAVORITOS ============ -->
+<div class="favs" id="favs" hidden>
+  <div class="favs__veil" id="favsVeil"></div>
+  <section class="favs__panel" id="favsPanel" role="dialog" aria-labelledby="favsTitle">
+    <header class="favs__head">
+      <h3 class="favs__title" id="favsTitle">Mis favoritos <span class="favs__n" id="favsN">0</span></h3>
+      <button class="favs__close" id="favsClose" aria-label="Cerrar favoritos">
+        <svg viewBox="0 0 24 24" class="ico"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <ul class="favs__list" id="favsList"></ul>
+    <p class="favs__empty" id="favsEmpty">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/></svg>
+      Todavía no guardaste ninguna propiedad.<br>
+      <span>Toca el corazón en cualquier propiedad para tenerla siempre a mano.</span>
+    </p>
+    <footer class="favs__foot" id="favsFoot">
+      <button class="favs__clear" id="favsClear" type="button">Vaciar lista</button>
+      <a class="btn btn--wa favs__send" id="favsSend" target="_blank" rel="noopener">
+        <Fragment set:html={ICO.wa} /> Consultar por WhatsApp
+      </a>
+    </footer>
+  </section>
+</div>

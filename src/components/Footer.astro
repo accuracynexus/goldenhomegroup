@@ -1,0 +1,69 @@
+---
+/* Pie del sitio y botones flotantes (WhatsApp y volver arriba). */
+import { MENU, TEL, MAIL, REDES, SEDES, EMPRESA } from '../lib/config';
+import { ICO } from '../lib/iconos';
+
+const anio = new Date().getFullYear();
+---
+
+<!-- ============ PIE ============ -->
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a href="/" class="logo logo--light">
+        <img src="/assets/img/logo-white.png" width="1774" height="887" loading="lazy"
+             alt={EMPRESA.nombre}>
+      </a>
+      <p>{EMPRESA.lema}.</p>
+      <p class="footer__portafolio">{EMPRESA.portafolio}</p>
+      <div class="footer__social">
+        <a href={REDES.facebook} target="_blank" rel="noopener" aria-label="Facebook"><Fragment set:html={ICO.fb} /></a>
+        <a href={REDES.instagram} target="_blank" rel="noopener" aria-label="Instagram"><Fragment set:html={ICO.ig} /></a>
+        <a href={REDES.tiktok} target="_blank" rel="noopener" aria-label="TikTok"><Fragment set:html={ICO.tt} /></a>
+      </div>
+    </div>
+
+    <div class="footer__col">
+      <h4>Navegación</h4>
+      <ul>
+        {MENU.map(([href, texto]) => <li><a href={href}>{texto}</a></li>)}
+      </ul>
+    </div>
+
+    <div class="footer__col footer__col--contact">
+      <h4>Contacto</h4>
+      <ul>
+        <li><Fragment set:html={ICO.tel} /><a href="tel:+51936342373">{TEL}</a></li>
+        <li><Fragment set:html={ICO.mail} /><a href={`mailto:${MAIL}`}>{MAIL}</a></li>
+        {SEDES.map(s => <li><Fragment set:html={ICO.lugar} />{s.direccion}</li>)}
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="/privacidad">Política de privacidad</a></li>
+        <li><a href="/terminos">Términos y condiciones</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>&copy; <span id="year">{anio}</span> {EMPRESA.nombre}. Todos los derechos reservados.</p>
+    <a class="powered" href="https://accuracynexus.wuaze.com" target="_blank" rel="noopener">
+      <span>Powered by</span>
+      <strong>Accuracy Nexus <Fragment set:html={ICO.flecha} /></strong>
+    </a>
+  </div>
+</footer>
+
+<!-- ============ FLOTANTES ============ -->
+<a class="wa" href="#" data-wa="general" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16.04 3C9.4 3 4 8.4 4 15.04c0 2.12.56 4.2 1.62 6.03L4 29l8.13-1.58a12 12 0 0 0 3.9.65h.01C22.68 28.07 28.08 22.67 28.08 16.03 28.08 8.4 22.68 3 16.04 3Zm0 22.06h-.01a10 10 0 0 1-5.08-1.39l-.37-.22-3.83.75.77-3.73-.24-.38a9.97 9.97 0 0 1-1.53-5.32c0-5.52 4.5-10.02 10.03-10.02 2.68 0 5.2 1.05 7.09 2.94a9.95 9.95 0 0 1 2.93 7.09c0 5.52-4.5 10.02-10.02 10.02Zm5.5-7.5c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.08-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.24 5.14 4.55.72.3 1.28.49 1.71.63.72.23 1.37.2 1.89.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg>
+  <span class="wa__pulse" aria-hidden="true"></span>
+  <span class="wa__tip">¿Hablamos?</span>
+</a>
+
+<button class="totop" id="toTop" aria-label="Volver arriba">
+  <svg viewBox="0 0 24 24" class="ico"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+</button>

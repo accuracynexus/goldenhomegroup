@@ -1,0 +1,19 @@
+{
+  "name": "golden-home-group",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sitio web e intranet de Golden Home Group — Astro SSR + SQLite",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "node ./dist/server/entry.mjs",
+    "db:seed": "node scripts/seed.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node": "^11.1.4",
+    "astro": "^7.2.4",
+    "sharp": "^0.35.3"
+  }
+}

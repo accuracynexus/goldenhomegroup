@@ -1,0 +1,671 @@
+/* ==========================================================================
+   Panel administrativo — Golden Home Group
+   Misma paleta que la web: negro, dorado, blanco y grises.
+   ========================================================================== */
+:root{
+  --black:#0B0B0C; --ink:#16171A; --ink-2:#1F2126;
+  --gray-900:#2B2D33; --gray-600:#6B6E76; --gray-400:#9A9DA5;
+  --gray-200:#E6E7EA; --gray-100:#F2F3F5; --soft:#FAFAF8; --white:#fff;
+  --gold:#C9A227; --gold-light:#E3C766; --gold-dark:#A8861A; --gold-soft:rgba(201,162,39,.12);
+  /* El dorado oscuro sirve para iconos y bordes, pero sobre fondo dorado suave
+     se queda en 3.1:1: para texto chico se usa este tono más profundo. */
+  --gold-texto:#75600F;
+  --grad-gold:linear-gradient(135deg,#A8861A 0%,#D4AF37 50%,#B08A16 100%);
+  --grad-dark:linear-gradient(150deg,#111214 0%,#1C1D21 100%);
+  --font:'Inter',system-ui,sans-serif; --display:'Playfair Display',Georgia,serif;
+  --radius:14px; --t:.25s cubic-bezier(.4,0,.2,1);
+  --alto-barra:69px;
+  --sh:0 4px 14px rgba(11,11,12,.06); --sh-md:0 14px 40px rgba(11,11,12,.12);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+*{ margin:0; padding:0; }
+body{
+  font-family:var(--font); font-size:15px; color:var(--gray-900);
+  /* Sobre el crema, un papel pintado de motivos del oficio —casas, un
+     edificio, una llave, una ventana, un plano acotado, un cartel de venta—
+     en trazo dorado al 16 %. Se ve en los márgenes y entre las tarjetas, y
+     desaparece detrás de cualquier contenido: si se llegara a leer sobre el
+     fondo, estaría demasiado fuerte.
+
+     Va fijo: el patrón se queda quieto y son las tarjetas las que corren
+     por encima, como una pared detrás de los papeles. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cg fill='none' stroke='%23A8861A' stroke-opacity='.16' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(40,48)'%3E%3Cpath d='M0 30 30 4 60 30'/%3E%3Cpath d='M8 26v34h44V26'/%3E%3Cpath d='M23 60V44h14v16'/%3E%3Cpath d='M46 14V6h6v13'/%3E%3C/g%3E%3Cg transform='translate(266,28)'%3E%3Cpath d='M0 10h46v64H0z'/%3E%3Cpath d='M0 10 23-4 46 10'/%3E%3Cpath d='M9 24h8M29 24h8M9 38h8M29 38h8M9 52h8M29 52h8'/%3E%3Cpath d='M19 74V60h8v14'/%3E%3C/g%3E%3Cg transform='translate(44,252) rotate(-18)'%3E%3Ccircle cx='11' cy='11' r='9'/%3E%3Ccircle cx='11' cy='11' r='3'/%3E%3Cpath d='M20 11h42'/%3E%3Cpath d='M50 11v8M57 11v6'/%3E%3C/g%3E%3Cg transform='translate(274,256)'%3E%3Cpath d='M0 0h50v44H0z'/%3E%3Cpath d='M25 0v44M0 22h50'/%3E%3Cpath d='M-6 44h62'/%3E%3C/g%3E%3Cg transform='translate(152,148)'%3E%3Cpath d='M0 48V0h54'/%3E%3Cpath d='M14 60h40M14 56v8M54 56v8'/%3E%3C/g%3E%3Cg transform='translate(158,300)'%3E%3Cpath d='M0 0h46v26H0z'/%3E%3Cpath d='M9 0v46'/%3E%3Cpath d='M11 9h24M11 17h16'/%3E%3C/g%3E%3Cg transform='translate(340,164) rotate(12)'%3E%3Cpath d='M0 22 18 4l18 18'/%3E%3Cpath d='M5 19v20h26V19'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") 0 0 / 420px 420px repeat,
+    radial-gradient(120% 60% at 50% 0%, rgba(201,162,39,.07), transparent 60%),
+    var(--soft);
+  background-attachment:fixed;
+}
+img{ max-width:100%; display:block; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+button{ background:none; border:0; cursor:pointer; }
+table{ border-collapse:collapse; width:100%; }
+::selection{ background:var(--gold); color:var(--black); }
+
+.btn{
+  display:inline-flex; align-items:center; gap:8px; justify-content:center;
+  padding:11px 20px; border-radius:999px;
+  font-size:14px; font-weight:600; white-space:nowrap; text-decoration:none;
+  transition:var(--t);
+}
+/* Igual que en .acceso: el display de arriba le ganaría al atributo
+   `hidden`, y el botón Eliminar aparecería también al crear una propiedad
+   nueva, donde no hay nada que borrar. */
+.btn[hidden]{ display:none; }
+.btn--gold{ background:var(--grad-gold); color:var(--black); }
+.btn--gold:hover{ filter:brightness(1.06); transform:translateY(-1px); }
+.btn--ghost{ border:1.5px solid var(--gray-200); background:#fff; color:var(--gray-900); }
+.btn--ghost:hover{ border-color:var(--gold); color:var(--gold-dark); }
+.btn--borrar{ color:#C0392B; }
+.btn--borrar:hover{ background:#FDECEC; }
+
+/* --- Acceso -------------------------------------------------------------- */
+.acceso{
+  min-height:100vh; display:grid; place-items:center; padding:24px;
+  position:relative; overflow:hidden;
+  background:var(--grad-dark);
+}
+/* Sin esta línea el `display:grid` de arriba le gana al display:none que
+   trae el atributo `hidden`, y al entrar al panel la pantalla de acceso
+   seguía ocupando su alto completo con el panel colgando debajo. */
+.acceso[hidden]{ display:none; }
+/* Dos focos dorados en esquinas opuestas: la pantalla deja de ser un
+   rectángulo negro plano detrás de una caja blanca */
+.acceso::before,
+.acceso::after{
+  content:''; position:absolute; border-radius:50%; pointer-events:none;
+}
+.acceso::before{
+  width:620px; height:620px; top:-240px; right:-200px;
+  background:radial-gradient(circle, rgba(201,162,39,.20), transparent 66%);
+}
+.acceso::after{
+  width:520px; height:520px; bottom:-220px; left:-180px;
+  background:radial-gradient(circle, rgba(227,199,102,.11), transparent 68%);
+}
+
+.acceso__caja{
+  position:relative; z-index:1;
+  width:min(420px,100%); background:#fff; border-radius:24px;
+  padding:44px 40px 38px; text-align:center;
+  box-shadow:0 34px 90px rgba(0,0,0,.46);
+  animation:acceso-entra .45s cubic-bezier(.2,.7,.3,1);
+}
+.acceso__caja img{ margin:0 auto 22px; width:auto; height:56px; }
+.acceso__caja h1{
+  font-family:var(--display); font-size:26px; color:var(--black); letter-spacing:-.01em;
+}
+.acceso__sub{ color:var(--gray-600); font-size:14px; margin:6px 0 30px; }
+
+.acceso__campo{ text-align:left; margin-bottom:18px; }
+.acceso__campo label{
+  display:block; font-size:12.5px; font-weight:600; color:var(--black); margin-bottom:7px;
+}
+/* El icono y el botón de ver van dentro del recuadro, no al lado */
+.acceso__control{ position:relative; display:flex; align-items:center; }
+.acceso__ico{
+  position:absolute; left:14px; display:grid; place-items:center;
+  color:var(--gray-400); pointer-events:none; transition:var(--t);
+}
+.acceso__ico svg{
+  width:18px; height:18px; fill:none; stroke:currentColor;
+  stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+}
+.acceso__campo input{
+  width:100%; padding:13px 14px 13px 44px;
+  border:1.5px solid var(--gray-200); border-radius:12px;
+  background:var(--soft); font-size:14.5px; outline:none; transition:var(--t);
+}
+/* gray-600 y no gray-400: sobre el fondo crema del campo, el gris claro
+   quedaba en 2.6:1 y el texto de ayuda no se leía */
+.acceso__campo input::placeholder{ color:var(--gray-600); opacity:.85; }
+.acceso__campo input:focus{
+  border-color:var(--gold); background:#fff; box-shadow:0 0 0 4px var(--gold-soft);
+}
+.acceso__campo input:focus ~ .acceso__ico,
+.acceso__control:focus-within .acceso__ico{ color:var(--gold-dark); }
+/* Deja sitio al botón del ojo para que no tape lo que se escribe */
+#clave{ padding-right:46px; }
+
+.acceso__ver{
+  position:absolute; right:8px; display:grid; place-items:center;
+  width:34px; height:34px; border-radius:9px;
+  color:var(--gray-400); transition:var(--t);
+}
+.acceso__ver:hover{ background:var(--gray-100); color:var(--black); }
+.acceso__ver svg{
+  width:18px; height:18px; fill:none; stroke:currentColor;
+  stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+}
+.acceso__ver .acceso__ojo-off{ display:none; }
+.acceso__ver.is-viendo{ color:var(--gold-dark); }
+.acceso__ver.is-viendo .acceso__ojo{ display:none; }
+.acceso__ver.is-viendo .acceso__ojo-off{ display:block; }
+
+.acceso__enviar{
+  position:relative; width:100%; margin-top:8px; padding:14px 20px; font-size:15px;
+}
+.acceso__enviar:disabled{ cursor:progress; }
+/* Mientras se comprueba, el texto cede el lugar a un anillo girando */
+.acceso__enviar.is-cargando .acceso__enviar-txt{ visibility:hidden; }
+.acceso__giro{ display:none; }
+.acceso__enviar.is-cargando .acceso__giro{
+  display:block; position:absolute; top:50%; left:50%;
+  width:19px; height:19px; margin:-10px 0 0 -10px;
+  border:2.5px solid rgba(11,11,12,.25); border-top-color:var(--black);
+  border-radius:50%; animation:acceso-gira .7s linear infinite;
+}
+
+.acceso__error{
+  display:flex; align-items:center; gap:9px; margin-top:18px;
+  padding:11px 14px; border-radius:11px;
+  background:#FDECEC; border:1px solid rgba(192,57,43,.22);
+  color:#A5281B; font-size:13.5px; font-weight:500; text-align:left;
+}
+.acceso__error[hidden]{ display:none; }
+.acceso__error::before{
+  content:''; flex:none; width:17px; height:17px;
+  background:center / contain no-repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A5281B' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16.2v.1'/%3E%3C/svg%3E");
+}
+
+@keyframes acceso-entra{ from{ opacity:0; transform:translateY(14px) scale(.98); } }
+@keyframes acceso-gira{ to{ transform:rotate(360deg); } }
+
+@media (max-width:480px){
+  .acceso{ padding:16px; }
+  .acceso__caja{ padding:34px 24px 30px; border-radius:20px; }
+  .acceso__caja img{ height:48px; margin-bottom:18px; }
+  .acceso__caja h1{ font-size:23px; }
+}
+
+/* --- Barra superior --- */
+.barra{
+  position:sticky; top:0; z-index:10;
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  padding:14px 26px; background:var(--grad-dark); color:#fff;
+  border-bottom:1px solid rgba(227,199,102,.18);
+  box-shadow:0 6px 24px rgba(11,11,12,.16);
+}
+.barra__marca{ display:flex; align-items:center; gap:13px; }
+.barra__marca img{ border-radius:10px; }
+.barra__marca strong{ display:block; font-size:15px; letter-spacing:-.01em; }
+.barra__marca span{ font-size:12.5px; color:var(--gold-light); }
+.barra__acciones{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.barra .btn--ghost{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.18); color:#fff; }
+.barra .btn--ghost:hover{ background:rgba(255,255,255,.13); color:#fff; border-color:rgba(255,255,255,.4); }
+
+/* Solo aparece en pantallas angostas: en escritorio los tres botones caben
+   en la barra y no hay nada que plegar. */
+.barra__menu{
+  display:none; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  width:42px; height:42px; flex:none; border-radius:12px; position:relative; z-index:3;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); color:#fff;
+  transition:var(--t);
+}
+.barra__menu:hover{ background:rgba(255,255,255,.13); }
+.barra__menu span{
+  display:block; width:18px; height:2px; border-radius:2px; background:currentColor;
+  transition:transform var(--t), opacity var(--t);
+}
+.barra__velo{ display:none; }
+
+.contenido{ max-width:1400px; margin:0 auto; padding:30px 26px 60px; }
+
+/* --- Resumen -------------------------------------------------------------
+   Cada cifra con su icono y una nota que la explica: se leen de un vistazo
+   sin tener que deducir qué significa cada número.
+
+   El icono va al lado del número y no encima: las cuatro tarjetas pasan de
+   188 a ~130 px de alto y la tabla —que es donde se trabaja— empieza más
+   arriba, sin perder ninguna de las tres piezas de información. */
+.resumen{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(212px,1fr));
+  gap:14px; margin-bottom:22px;
+}
+.tarjeta{
+  position:relative; overflow:hidden;
+  display:grid; grid-template-columns:auto 1fr; align-items:center; gap:0 14px;
+  background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius);
+  padding:17px 18px; box-shadow:0 1px 2px rgba(11,11,12,.04);
+  transition:transform var(--t), box-shadow var(--t);
+}
+.tarjeta:hover{ transform:translateY(-2px); box-shadow:var(--sh-md); }
+/* Filete de color arriba: identifica la tarjeta sin teñirla entera */
+.tarjeta::before{
+  content:''; position:absolute; inset:0 0 auto 0; height:3px; background:var(--gray-200);
+}
+.tarjeta__ico{
+  display:grid; place-items:center; width:38px; height:38px;
+  border-radius:11px; background:var(--gray-100); color:var(--gray-600);
+}
+.tarjeta__ico svg{
+  width:19px; height:19px; fill:none; stroke:currentColor;
+  stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+}
+.tarjeta__dato{ min-width:0; }
+.tarjeta__dato strong{
+  display:block; font-family:var(--display); font-size:27px;
+  color:var(--black); line-height:1; letter-spacing:-.02em;
+}
+.tarjeta__dato span{
+  display:block; margin-top:4px; font-size:13px; color:var(--gray-600); line-height:1.25;
+}
+/* La nota cruza las dos columnas: explica la cifra, no al icono */
+.tarjeta__nota{
+  grid-column:1/-1; margin-top:14px; padding-top:10px;
+  border-top:1px solid var(--gray-100);
+  font-size:12px; color:var(--gray-600);
+}
+.tarjeta__nota--aviso{ color:#B7791F; font-weight:600; }
+
+.tarjeta--total::before{ background:var(--grad-gold); }
+.tarjeta--total .tarjeta__ico{ background:var(--gold-soft); color:var(--gold-dark); }
+.tarjeta--publicadas::before{ background:#1B8A5A; }
+.tarjeta--publicadas .tarjeta__ico{ background:rgba(27,138,90,.12); color:#17754C; }
+.tarjeta--destacadas::before{ background:var(--gold-light); }
+.tarjeta--destacadas .tarjeta__ico{ background:var(--gold-soft); color:var(--gold-dark); }
+.tarjeta--disponibles::before{ background:var(--black); }
+.tarjeta--disponibles .tarjeta__ico{ background:var(--gray-100); color:var(--black); }
+
+/* --- Filtros -------------------------------------------------------------
+   Son la barra de herramientas de la tabla, así que van pegados a ella: una
+   sola tarjeta con los controles arriba y las filas debajo, en vez de dos
+   bloques sueltos con un hueco en medio que los desemparejaba. */
+.filtros{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  padding:12px 14px;
+  border:1px solid var(--gray-200); border-bottom:0;
+  border-radius:var(--radius) var(--radius) 0 0;
+  background:#fff;
+}
+.filtros input, .filtros select{
+  height:40px; padding:0 13px; border:1.5px solid var(--gray-200); border-radius:10px;
+  background:var(--soft); outline:none; font-size:14px; transition:var(--t);
+}
+/* Lupa dentro del buscador */
+.filtros input{
+  flex:1 1 240px; min-width:180px; padding-left:38px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6E76' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m16 16 4.5 4.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:13px center; background-size:16px;
+}
+/* Flecha propia en los desplegables: la nativa cambia en cada sistema */
+.filtros select{
+  flex:0 1 auto; padding-right:32px; appearance:none; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B6E76' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 11px center; background-size:14px;
+}
+.filtros select:hover{ border-color:var(--gray-400); }
+.filtros input:focus, .filtros select:focus{
+  border-color:var(--gold); background-color:#fff; box-shadow:0 0 0 4px var(--gold-soft);
+}
+
+/* --- Tabla ---------------------------------------------------------------
+   Anchos fijos por columna. Con el reparto automático el navegador daba
+   sitio según el largo del contenido: "Hostal con casa y cocheras" abría la
+   columna Tipo y el título de la propiedad —lo único que se lee de verdad—
+   terminaba partido en tres líneas. Ahora cada columna accesoria mide lo
+   justo para su encabezado y todo lo que sobra es para la propiedad. */
+.tabla-wrap{
+  background:#fff; border:1px solid var(--gray-200);
+  border-radius:0 0 var(--radius) var(--radius);
+  /* clip y no hidden: hidden crea un contenedor de scroll, y con él el
+     encabezado pegajoso de abajo no tendría a qué pegarse. */
+  overflow:clip;
+  box-shadow:0 1px 2px rgba(11,11,12,.04);
+}
+.tabla{ font-size:14px; table-layout:fixed; }
+.tabla th{
+  /* Se queda a la vista al bajar por el listado, justo debajo de la barra */
+  position:sticky; top:var(--alto-barra); z-index:2;
+  text-align:left; padding:13px 14px; background:var(--soft);
+  font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--gray-600); border-bottom:1px solid var(--gray-200); white-space:nowrap;
+}
+.tabla th:nth-child(2){ width:140px; }
+.tabla th:nth-child(3){ width:108px; }
+.tabla th:nth-child(4){ width:132px; text-align:right; }
+.tabla th:nth-child(5){ width:120px; }
+.tabla th:nth-child(6),
+.tabla th:nth-child(7){ width:100px; text-align:center; }
+.tabla th:nth-child(8){ width:140px; }
+
+.tabla td{ padding:11px 14px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+.tabla tr:last-child td{ border-bottom:0; }
+/* El tipo es dato de apoyo: se lee después del título, no antes */
+.tabla td:nth-child(2){ font-size:13px; color:var(--gray-600); }
+.tabla td:nth-child(6),
+.tabla td:nth-child(7){ text-align:center; }
+.tabla tbody tr{ transition:background var(--t); }
+.tabla tbody tr:hover td{ background:rgba(201,162,39,.07); }
+/* Filete dorado al pasar: marca la fila activa sin recuadrarla */
+.tabla tbody tr td:first-child{ box-shadow:inset 3px 0 0 transparent; transition:box-shadow var(--t); }
+.tabla tbody tr:hover td:first-child{ box-shadow:inset 3px 0 0 var(--gold); }
+
+/* min-width:0 en los dos niveles: sin eso el recorte con puntos suspensivos
+   no llega a aplicarse, porque una caja flex no baja del ancho de su
+   contenido. */
+.prop{ display:flex; align-items:center; gap:12px; min-width:0; }
+.prop > div{ min-width:0; }
+.prop img{
+  width:58px; height:44px; border-radius:9px; object-fit:cover;
+  background:var(--gray-100); flex:none; border:1px solid var(--gray-200);
+}
+/* Dos líneas como techo: así todas las filas miden lo mismo y la vista se
+   recorre de un tirón, aunque un título venga muy largo. */
+.prop strong{
+  display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+  overflow:hidden; font-size:14px; line-height:1.32; color:var(--black);
+}
+.prop span{
+  display:block; margin-top:3px; font-size:12.5px; color:var(--gray-600);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* La zona abre la segunda línea de cada fila: con dos mercados en el mismo
+   listado, saber si es Lima o Junín importa antes que la dirección. */
+.prop .zona{ color:var(--gold-texto); font-weight:700; letter-spacing:.03em; }
+
+/* Etiquetas de estado: un punto de color antes del texto ayuda a
+   distinguirlas sin depender solo del color de fondo */
+.pill{
+  display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px;
+  font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+}
+.pill::before{
+  content:''; width:6px; height:6px; border-radius:50%; background:currentColor; flex:none;
+}
+.pill--disponible{ background:rgba(27,138,90,.12); color:#17754C; }
+.pill--reservado{ background:rgba(183,121,31,.14); color:#8A5A12; }
+.pill--vendido, .pill--alquilado{ background:var(--gray-100); color:var(--gray-600); }
+.pill--venta{ background:var(--gold-soft); color:var(--gold-texto); }
+.pill--alquiler{ background:var(--black); color:var(--gold-light); }
+/* En Operación el punto sobra: ahí la etiqueta ya es la única señal */
+.pill--venta::before, .pill--alquiler::before{ display:none; }
+
+/* Alineado a la derecha y con cifras de ancho fijo: las unidades quedan una
+   debajo de otra y se comparan precios recorriendo la columna. */
+.precio{
+  font-family:var(--display); font-size:15.5px; font-weight:700; color:var(--black);
+  white-space:nowrap; text-align:right; font-variant-numeric:tabular-nums;
+}
+.acciones{ display:flex; gap:4px; justify-content:flex-end; }
+.icono{
+  width:32px; height:32px; border-radius:9px; display:grid; place-items:center;
+  color:var(--gray-400); transition:var(--t);
+}
+.icono svg{
+  width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:1.7;
+  stroke-linecap:round; stroke-linejoin:round;
+}
+/* Apagados hasta que la fila interesa: son tres iconos por fila y veinte
+   filas, sesenta manchas compitiendo con el contenido. */
+.tabla tbody tr:hover .icono{ color:var(--gray-600); }
+.icono:hover{ background:#fff; color:var(--gold-dark); box-shadow:var(--sh); }
+.icono--borrar:hover{ background:#FDECEC; color:#C0392B; box-shadow:none; }
+:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+/* Sin resultados: una tarjeta con su icono, no un texto perdido */
+.vacio{
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  padding:56px 24px; text-align:center; color:var(--gray-600); font-size:15px;
+}
+.vacio::before{
+  content:''; width:50px; height:50px; border-radius:50%;
+  background:var(--gold-soft) center / 24px 24px no-repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A8861A' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m16.5 16.5 4 4'/%3E%3C/svg%3E");
+}
+
+/* --- Interruptor --- */
+.switch{ display:inline-flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; }
+.switch input{ display:none; }
+.switch span{
+  width:42px; height:24px; border-radius:999px; background:var(--gray-200);
+  position:relative; transition:var(--t); flex:none;
+}
+.switch span::after{
+  content:''; position:absolute; top:3px; left:3px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:var(--t); box-shadow:var(--sh);
+}
+.switch input:checked + span{ background:var(--grad-gold); }
+.switch input:checked + span::after{ transform:translateX(18px); }
+
+/* En el listado son cuarenta interruptores a la vez: a tamaño completo el
+   dorado pesaba más que las propiedades. Dentro de la tabla van un punto
+   más chicos; en el formulario se quedan como estaban. */
+.tabla .switch span{ width:36px; height:21px; }
+.tabla .switch span::after{ width:15px; height:15px; }
+.tabla .switch input:checked + span::after{ transform:translateX(15px); }
+
+/* --- Modal --- */
+.modal{ position:fixed; inset:0; z-index:50; display:grid; place-items:center; padding:20px; }
+.modal[hidden]{ display:none; }
+.modal__veil{ position:absolute; inset:0; background:rgba(11,11,12,.6); backdrop-filter:blur(3px); }
+.modal__caja{
+  position:relative; width:min(880px,100%); max-height:calc(100vh - 40px);
+  display:flex; flex-direction:column;
+  background:#fff; border-radius:20px; overflow:hidden; box-shadow:0 40px 90px rgba(0,0,0,.4);
+}
+.modal__head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 26px; border-bottom:1px solid var(--gray-200);
+}
+.modal__head h2{ font-family:var(--display); font-size:21px; color:var(--black); }
+.modal__x{ font-size:28px; line-height:1; color:var(--gray-400); width:36px; height:36px; border-radius:10px; }
+.modal__x:hover{ background:var(--gray-100); color:var(--black); }
+.modal__cuerpo{ overflow-y:auto; padding:24px 26px; }
+.modal__pie{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:16px 26px; border-top:1px solid var(--gray-200); background:var(--soft);
+}
+.modal__pie-der{ display:flex; gap:10px; margin-left:auto; }
+
+.campos{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+
+/* Encabezados de grupo: el formulario tiene treinta campos, y sin cortes
+   se lee como una lista interminable. Cada grupo abre con su nombre y una
+   línea que explica para qué sirve. */
+.grupo{
+  grid-column:1/-1; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  margin-top:14px; padding-bottom:9px; border-bottom:1px solid var(--gray-200);
+}
+.grupo:first-child{ margin-top:0; }
+.grupo span{
+  font-family:var(--display); font-size:15.5px; font-weight:700; color:var(--black);
+  position:relative; padding-left:13px;
+}
+.grupo span::before{
+  content:''; position:absolute; left:0; top:.15em; bottom:.15em; width:3px;
+  border-radius:2px; background:var(--grad-gold);
+}
+.grupo em{ font-style:normal; font-size:12.5px; color:var(--gray-600); }
+.campo{ display:flex; flex-direction:column; gap:6px; }
+.campo--full{ grid-column:1/-1; }
+.campo > span{ font-size:12.5px; font-weight:600; color:var(--black); }
+.campo > span em{ font-style:normal; font-weight:400; color:var(--gray-400); }
+.campo input, .campo select, .campo textarea{
+  padding:11px 13px; border:1.5px solid var(--gray-200); border-radius:11px;
+  background:#fff; outline:none; resize:vertical; transition:var(--t); font-size:14px;
+}
+.campo input:focus, .campo select:focus, .campo textarea:focus{
+  border-color:var(--gold); box-shadow:0 0 0 4px var(--gold-soft);
+}
+.campo small{ font-size:12px; color:var(--gray-400); }
+.interruptores{ flex-direction:row; gap:28px; flex-wrap:wrap; padding-top:6px; }
+
+/* --- Fotografía de portada ---
+   Un solo hueco: vacío invita a cargar, lleno muestra la imagen con sus
+   dos acciones encima. Subir otra reemplaza a la anterior. */
+.portadilla{ margin-top:4px; }
+/* La portada de la ficha se ve a todo lo ancho en la web: su hueco en el
+   formulario lleva el mismo encuadre para que se juzgue lo que se va a ver. */
+.portadilla--ancha .portadilla__vacia,
+.portadilla--ancha .portadilla__marco{ aspect-ratio:16/9; max-width:420px; }
+.portadilla__vacia{
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  width:100%; max-width:320px; aspect-ratio:4/3;
+  border:2px dashed var(--gray-200); border-radius:14px;
+  background:var(--soft); color:var(--gray-600);
+  cursor:pointer; text-align:center; transition:var(--t);
+}
+.portadilla__vacia svg{
+  width:34px; height:34px; margin-bottom:4px;
+  fill:none; stroke:var(--gray-400); stroke-width:1.5;
+  stroke-linecap:round; stroke-linejoin:round; transition:var(--t);
+}
+.portadilla__vacia strong{ font-size:14px; font-weight:600; color:var(--black); }
+.portadilla__vacia span{ font-size:12px; }
+.portadilla__vacia:hover{ border-color:var(--gold); background:var(--gold-soft); }
+.portadilla__vacia:hover svg{ stroke:var(--gold-dark); }
+
+.portadilla__marco{
+  position:relative; width:100%; max-width:320px; aspect-ratio:4/3;
+  border-radius:14px; overflow:hidden; border:2px solid var(--gold);
+  background:var(--gray-100); box-shadow:var(--sh);
+}
+.portadilla__marco img{ width:100%; height:100%; object-fit:cover; display:block; }
+.portadilla__sello{
+  position:absolute; top:10px; left:10px;
+  padding:4px 11px; border-radius:999px;
+  background:var(--grad-gold); color:var(--black);
+  font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+}
+/* Las acciones descansan sobre un velo, para que se lean sobre cualquier foto */
+.portadilla__acc{
+  position:absolute; left:0; right:0; bottom:0;
+  display:flex; gap:8px; padding:10px;
+  background:linear-gradient(to top, rgba(11,11,12,.82), rgba(11,11,12,0));
+}
+.portadilla__btn{
+  flex:1; padding:8px 12px; border-radius:9px;
+  background:rgba(255,255,255,.94); color:var(--black);
+  font-size:12.5px; font-weight:600; text-align:center; cursor:pointer;
+  transition:var(--t);
+}
+.portadilla__btn:hover{ background:#fff; }
+.portadilla__btn--quitar:hover{ background:#C0392B; color:#fff; }
+
+/* --- Aviso --- */
+.aviso{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(12px);
+  z-index:80; padding:13px 24px; border-radius:999px;
+  background:var(--black); color:#fff; font-size:14px; font-weight:500;
+  box-shadow:var(--sh-md); opacity:0; transition:var(--t);
+}
+.aviso.is-visible{ opacity:1; transform:translateX(-50%) translateY(0); }
+.aviso.is-error{ background:#C0392B; }
+
+/* --- Responsive ----------------------------------------------------------
+   Dos cortes: en tableta se pliega la barra, y en teléfono la tabla deja de
+   ser tabla. */
+
+@media (max-width:900px){
+  .campos{ grid-template-columns:repeat(2,1fr); }
+
+  /* La barra vuelve a una sola fila. Antes se apilaba en columna y los tres
+     botones a lo ancho se comían 150 px de alto en cada pantalla; ahora se
+     van a un cajón lateral y arriba solo queda la marca y la hamburguesa. */
+  .barra{ padding:11px 16px; }
+  .barra__menu{ display:flex; }
+
+  .barra__acciones{
+    position:fixed; top:0; right:0; bottom:0; z-index:2;
+    width:min(286px,84vw);
+    flex-direction:column; align-items:stretch; gap:10px;
+    padding:78px 20px 24px;
+    background:var(--grad-dark);
+    border-left:1px solid rgba(227,199,102,.18);
+    box-shadow:-24px 0 60px rgba(11,11,12,.5);
+    /* visibility además de transform: cerrado no debe recibir el tabulador */
+    transform:translateX(100%); visibility:hidden;
+    transition:transform var(--t), visibility var(--t);
+  }
+  .barra__acciones .btn{ width:100%; padding:13px 18px; font-size:15px; }
+  .barra__velo{
+    display:block; position:fixed; inset:0; z-index:1;
+    background:rgba(11,11,12,.55); backdrop-filter:blur(2px);
+    opacity:0; visibility:hidden; transition:var(--t);
+  }
+
+  /* La barra tiene z-index propio, así que el cajón y su velo viven dentro
+     de ella; mientras está abierto sube por encima del resto del panel. */
+  body.menu-abierto .barra{ z-index:60; }
+  body.menu-abierto .barra__acciones{ transform:none; visibility:visible; }
+  body.menu-abierto .barra__velo{ opacity:1; visibility:visible; }
+  body.menu-abierto{ overflow:hidden; }
+
+  /* Las tres líneas se cruzan en aspa al abrir */
+  body.menu-abierto .barra__menu span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+  body.menu-abierto .barra__menu span:nth-child(2){ opacity:0; }
+  body.menu-abierto .barra__menu span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+}
+
+@media (max-width:640px){
+  .campos{ grid-template-columns:1fr; }
+  .contenido{ padding:18px 16px 40px; }
+
+  /* Dos por fila: cuatro tarjetas apiladas obligaban a bajar media pantalla
+     antes de llegar al listado. */
+  .resumen{ grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:16px; }
+  .tarjeta{ padding:14px; gap:0 11px; }
+  .tarjeta__ico{ width:32px; height:32px; border-radius:9px; }
+  .tarjeta__ico svg{ width:17px; height:17px; }
+  .tarjeta__dato strong{ font-size:23px; }
+  .tarjeta__dato span{ font-size:12px; }
+  .tarjeta__nota{ margin-top:11px; padding-top:8px; font-size:11.5px; }
+
+  .filtros{
+    border-radius:var(--radius); border-bottom:1px solid var(--gray-200);
+    margin-bottom:12px; padding:12px;
+  }
+  .filtros input{ flex:1 1 100%; }
+  .filtros select{ flex:1 1 calc(50% - 5px); }
+
+  /* La tabla deja de serlo: en 390 px de ancho, ocho columnas solo se podían
+     recorrer arrastrando de lado. Cada propiedad pasa a ser una ficha con
+     sus datos en pares etiqueta/valor —la etiqueta la pone el CSS desde el
+     atributo data-col, que es el mismo texto del encabezado que se oculta—. */
+  .tabla-wrap{ background:none; border:0; box-shadow:none; border-radius:0; overflow:visible; }
+  .tabla{ min-width:0; }
+  .tabla, .tabla tbody, .tabla tr, .tabla td{ display:block; width:auto; }
+  .tabla thead{ display:none; }
+
+  .tabla tbody tr{
+    margin-bottom:12px; padding:14px;
+    background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius);
+    box-shadow:0 1px 2px rgba(11,11,12,.04);
+  }
+  .tabla tbody tr:hover td{ background:none; }
+  .tabla tbody tr td:first-child,
+  .tabla tbody tr:hover td:first-child{ box-shadow:none; }
+
+  .tabla td{ padding:0; border:0; }
+  .tabla td:first-child{ margin-bottom:6px; }
+  .tabla td:not(:first-child){
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:9px 0; border-top:1px solid var(--gray-100); text-align:left;
+  }
+  .tabla td:not(:first-child)::before{
+    content:attr(data-col); flex:none;
+    font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--gray-600);
+  }
+  /* La celda de acciones no lleva etiqueta: los tres iconos se van al borde */
+  .tabla td:last-child{ justify-content:flex-end; }
+  .tabla td:nth-child(2){ font-size:13.5px; color:var(--gray-900); }
+  .precio{ text-align:right; }
+  /* En la ficha los iconos no tienen un "pasar por encima" que los encienda */
+  .tabla .icono{ color:var(--gray-600); }
+  .prop img{ width:64px; height:50px; }
+  .prop strong{ -webkit-line-clamp:3; }
+
+  .vacio{ background:#fff; border:1px solid var(--gray-200); border-radius:var(--radius); }
+
+  /* El formulario ocupa la pantalla entera: en un teléfono, una ventana
+     flotante con márgenes desperdicia el poco alto que hay. */
+  .modal{ padding:0; }
+  .modal__caja{ width:100%; height:100%; max-height:100%; border-radius:0; }
+  .modal__cuerpo{ padding:18px 16px; }
+  .modal__head, .modal__pie{ padding:14px 16px; }
+  .modal__pie .btn{ flex:1; }
+}

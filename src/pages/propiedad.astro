@@ -1,0 +1,221 @@
+---
+/* Ficha de propiedad.
+
+   Antes se armaba con JavaScript en el navegador: los buscadores veían una
+   página vacía. Ahora sale del servidor con título, precio y descripción ya
+   dentro del HTML, y con datos estructurados para que Google entienda que
+   es un aviso inmobiliario.
+*/
+import Base from '../layouts/Base.astro';
+import CtaFinal from '../components/CtaFinal.astro';
+import { obtener } from '../lib/db';
+import { fmt, waLink, MENSAJES, EMPRESA } from '../lib/config';
+import { ICO_FICHA } from '../lib/iconos';
+
+const id = Astro.url.searchParams.get('id') || '';
+const p = id ? obtener(id) : null;
+
+if (!p) Astro.response.status = 404;
+
+/* La ficha ya no es una galería: muestra una sola fotografía de portada.
+   Si la propiedad todavía no tiene foto se usa la imagen genérica. */
+/* La portada tiene su propio encuadre (16:9): la de la tarjeta viene en 4:3
+   y aquí se recortaría por arriba y por abajo. Si todavía no se cargó una,
+   se usa la de la tarjeta antes que quedarse sin imagen. */
+const portada = p?.portada || p?.fotos?.[0] || '/assets/img/og-cover.svg';
+const mapa = p?.mapa ? `https://www.google.com/maps?q=${encodeURIComponent(p.mapa)}&output=embed` : '';
+const precioFmt = p ? fmt.precio(p.precio, p.moneda) : '';
+
+const specs = p ? [
+  p.area && { ico: ICO_FICHA.area, label: 'Área', valor: fmt.area(p.area) },
+  p.area_construida && { ico: ICO_FICHA.area, label: 'Área construida', valor: fmt.area(p.area_construida) },
+  p.habitaciones && { ico: ICO_FICHA.hab, label: 'Habitaciones', valor: String(p.habitaciones) },
+  p.banos && { ico: ICO_FICHA.bano, label: 'Baños', valor: String(p.banos) },
+  p.estacionamientos && { ico: ICO_FICHA.auto, label: 'Estacionamientos', valor: String(p.estacionamientos) },
+  p.piso && { ico: ICO_FICHA.piso, label: 'Piso', valor: String(p.piso) },
+  p.niveles && { ico: ICO_FICHA.niveles, label: 'Niveles', valor: String(p.niveles) },
+  p.frontis && { ico: ICO_FICHA.frontis, label: 'Frontis', valor: p.frontis },
+  p.parametros_construccion && { ico: ICO_FICHA.niveles, label: 'Parámetros de construcción', valor: p.parametros_construccion }
+].filter(Boolean) as { ico: string; label: string; valor: string }[] : [];
+
+/* Los cuatro datos que resumen la propiedad de un vistazo. Salen en la
+   placa bajo la portada; la lista completa sigue más abajo. */
+const clave = p ? [
+  p.area && { ico: ICO_FICHA.area, label: 'Área total', valor: fmt.area(p.area) },
+  p.area_construida && { ico: ICO_FICHA.area, label: 'Construida', valor: fmt.area(p.area_construida) },
+  p.habitaciones && { ico: ICO_FICHA.hab, label: 'Habitaciones', valor: String(p.habitaciones) },
+  p.banos && { ico: ICO_FICHA.bano, label: 'Baños', valor: String(p.banos) },
+  p.estacionamientos && { ico: ICO_FICHA.auto, label: 'Cocheras', valor: String(p.estacionamientos) },
+  p.frontis && { ico: ICO_FICHA.frontis, label: 'Frontis', valor: p.frontis },
+  p.niveles && { ico: ICO_FICHA.niveles, label: 'Niveles', valor: String(p.niveles) }
+].filter(Boolean).slice(0, 3) as { ico: string; label: string; valor: string }[] : [];
+
+/* El código cierra siempre la placa: es el dato que el interesado copia
+   para consultar, y evita que la placa quede vacía en las propiedades
+   que solo tienen área cargada. */
+if (p) clave.push({ ico: ICO_FICHA.codigo, label: 'Código', valor: p.id.toUpperCase() });
+
+/* Datos estructurados: le dicen a Google que esto es un anuncio de
+   propiedad con su precio y ubicación, no una página cualquiera. */
+const schema = p ? {
+  '@context': 'https://schema.org',
+  '@type': 'RealEstateListing',
+  name: p.titulo,
+  description: p.descripcion,
+  url: Astro.url.href,
+  image: [portada],
+  ...(p.precio ? { offers: { '@type': 'Offer', price: p.precio, priceCurrency: p.moneda, availability: p.estado === 'disponible' ? 'https://schema.org/InStock' : 'https://schema.org/SoldOut' } } : {}),
+  ...(p.ubicacion ? { address: { '@type': 'PostalAddress', streetAddress: p.direccion || p.ubicacion, addressLocality: p.distrito || undefined, addressCountry: 'PE' } } : {}),
+  ...(p.area ? { floorSize: { '@type': 'QuantitativeValue', value: p.area, unitCode: 'MTK' } } : {}),
+  provider: { '@type': 'RealEstateAgent', name: EMPRESA.nombre }
+} : null;
+
+const titulo = p ? `${p.titulo} | ${EMPRESA.nombre}` : `Propiedad no encontrada | ${EMPRESA.nombre}`;
+const descripcion = p
+  ? (p.descripcion || '').slice(0, 155)
+  : 'Es posible que esta propiedad ya no esté publicada. Revisa el listado completo.';
+---
+<Base titulo={titulo} descripcion={descripcion} imagen={portada}>
+  {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+
+  <section class="section ficha" id="fichaPropiedad">
+    {!p ? (
+      <div class="container ficha__vacia">
+        <h1 class="section__title">No encontramos esa propiedad</h1>
+        <p class="section__sub">Es posible que ya no esté publicada. Revisa el listado completo para ver las alternativas disponibles.</p>
+        <a href="/compra" class="btn btn--negro">Ver propiedades</a>
+      </div>
+    ) : (
+      <div class="container">
+        <nav class="miga" aria-label="Ruta de navegación">
+          <a href="/">Inicio</a> <span>/</span>
+          <a href="/compra">Compra</a> <span>/</span>
+          <em>{fmt.tipo(p.tipo)}</em>
+        </nav>
+
+        <!-- ============ PORTADA ============
+             Una sola fotografía, a lo ancho. El nombre, la operación y la
+             ubicación van sobre la imagen; el precio y los datos clave
+             bajan a una placa que se monta sobre su borde inferior. -->
+        <figure class="portada">
+          <img class="portada__img" src={portada} alt={p.titulo} fetchpriority="high" decoding="async">
+          <div class="portada__badges">
+            <span class:list={['tag', p.operacion === 'alquiler' ? 'tag--dark' : 'tag--gold']}>{fmt.operacion(p.operacion)}</span>
+            <span class:list={['estado', fmt.claseEstado(p.estado)]}>{fmt.estado(p.estado)}</span>
+          </div>
+          <figcaption class="portada__pie">
+            {/* La zona acompaña al tipo: "Mala" o "Rímac" a secas no ubican
+                a quien no conoce la región */}
+            <p class="portada__tipo">
+              {p.subtipo || fmt.tipo(p.tipo)}
+              {p.region && <><span class="portada__sep">·</span>{p.region}</>}
+            </p>
+            <h1 class="portada__title">{p.titulo}</h1>
+            <p class="portada__loc"><Fragment set:html={ICO_FICHA.lugar} /> <span>{p.ubicacion}</span></p>
+            {p.referencia && <p class="portada__ref"><Fragment set:html={ICO_FICHA.referencia} /> <span>{p.referencia}</span></p>}
+          </figcaption>
+        </figure>
+
+        <div class="placa">
+          <div class="placa__precio">
+            <span>Precio de {fmt.operacion(p.operacion).toLowerCase()}</span>
+            <strong set:html={p.operacion === 'alquiler' ? `${precioFmt}<small>/mes</small>` : precioFmt} />
+            {fmt.precioM2(p) && <em>{fmt.precioM2(p)}</em>}
+          </div>
+          {clave.length > 0 && (
+            <ul class="placa__datos">
+              {clave.map(d => (
+                <li>
+                  <Fragment set:html={d.ico} />
+                  <span><em>{d.label}</em><strong>{d.valor}</strong></span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div class="ficha__grid">
+          <div class="ficha__cuerpo">
+            {specs.length > 0 && (
+              <>
+                <h2 class="ficha__h2">Características</h2>
+                <ul class="ficha__specs">
+                  {specs.map(s => (
+                    <li><Fragment set:html={s.ico} /><span><em>{s.label}</em><strong>{s.valor}</strong></span></li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            <h2 class="ficha__h2">Descripción</h2>
+            <p class="ficha__desc">{p.descripcion}</p>
+
+            {p.caracteristicas.length > 0 && (
+              <>
+                <h2 class="ficha__h2">Detalles del inmueble</h2>
+                <ul class="ficha__lista">{p.caracteristicas.map(c => <li>{c}</li>)}</ul>
+              </>
+            )}
+
+            {p.linderos && (<><h2 class="ficha__h2">Medidas perimétricas</h2><p class="ficha__desc">{p.linderos}</p></>)}
+
+            {p.documentacion && (
+              <>
+                <h2 class="ficha__h2">Documentación</h2>
+                <p class="ficha__doc"><Fragment set:html={ICO_FICHA.doc} /> {p.documentacion}</p>
+              </>
+            )}
+
+            {mapa && (
+              <>
+                <h2 class="ficha__h2">Ubicación</h2>
+                <div class="ficha__mapa">
+                  <iframe src={mapa} title={`Ubicación de ${p.titulo}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+              </>
+            )}
+          </div>
+
+          <aside class="ficha__aside">
+            <div class="ficha__box">
+              <h3>¿Te interesa esta propiedad?</h3>
+              <p>Nuestro equipo puede brindarte mayor información y coordinar una visita.</p>
+              <a class="btn btn--wa btn--block" href={waLink(MENSAJES.propiedad.replace('{titulo}', p.titulo))} target="_blank" rel="noopener">
+                <svg viewBox="0 0 32 32" class="ico ico--fill" fill="currentColor" stroke="none"><path d="M16.04 3C9.4 3 4 8.4 4 15.04c0 2.12.56 4.2 1.62 6.03L4 29l8.13-1.58a12 12 0 0 0 3.9.65C22.68 28.07 28.08 22.67 28.08 16.03 28.08 8.4 22.68 3 16.04 3Zm0 22.06a10 10 0 0 1-5.09-1.39l-.37-.22-3.83.75.77-3.73-.24-.38a9.97 9.97 0 0 1-1.53-5.32c0-5.52 4.5-10.02 10.03-10.02a9.95 9.95 0 0 1 10.02 10.03c0 5.52-4.5 10.02-10.02 10.02Zm5.5-7.5c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.95 1.18-.18.2-.35.22-.65.08-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.67-2.08-.18-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.07-.8.38-.28.3-1.05 1.03-1.05 2.5s1.08 2.9 1.23 3.1c.15.2 2.12 3.24 5.14 4.55.72.3 1.28.49 1.71.63.72.23 1.37.2 1.89.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.28-.2-.58-.35Z"/></svg>
+                Consultar por WhatsApp
+              </a>
+              <a class="btn btn--outline btn--block" href={`/contacto?propiedad=${encodeURIComponent(p.id)}`}>Solicitar información</a>
+              <button class="ficha__fav" type="button" id="fichaFav"
+                      data-id={p.id} data-titulo={p.titulo} data-precio={precioFmt}
+                      data-operacion={p.operacion} data-ubicacion={p.ubicacion} data-foto={portada}>
+                <svg viewBox="0 0 24 24" class="ico"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/></svg>
+                <span>Guardar propiedad</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    )}
+  </section>
+
+  <CtaFinal titulo="¿Quieres ver otras<br>alternativas?" boton="Hablar por WhatsApp" />
+</Base>
+
+<script>
+  /* Guardar en favoritos desde la ficha */
+  const favBtn = document.getElementById('fichaFav');
+  if (favBtn) {
+    const datos = { ...(favBtn as HTMLElement).dataset } as Record<string, string>;
+    const pintarFav = () => {
+      const activo = (window as any).GHG?.favoritos?.tiene(datos.id);
+      favBtn.classList.toggle('is-active', !!activo);
+      favBtn.querySelector('span')!.textContent = activo ? 'Guardada en favoritos' : 'Guardar propiedad';
+    };
+    favBtn.addEventListener('click', () => {
+      (window as any).GHG?.favoritos?.alternar(datos);
+      pintarFav();
+    });
+    // sitio.js se carga al final del body: se espera a que exista
+    window.addEventListener('load', pintarFav);
+  }
+</script>

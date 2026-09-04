@@ -1,0 +1,43 @@
+---
+/* Preguntas frecuentes: una respuesta abierta a la vez (el acordeón lo
+   maneja sitio.js). Cada instancia genera ids propios para que dos bloques
+   en la misma página no choquen. */
+import { ICO } from '../lib/iconos';
+
+interface Props {
+  titulo?: string;
+  intro?: string;
+  cta?: boolean;
+  items: [string, string][];
+}
+const { titulo = 'Preguntas frecuentes', intro = '', cta = true, items } = Astro.props;
+const p = 'f' + Math.random().toString(36).slice(2, 8);
+---
+<!-- ============ PREGUNTAS FRECUENTES ============ -->
+<section class="section faq" id="faq">
+  <div class="container faq__grid">
+    <div class="faq__intro">
+      <h2 class="section__title reveal" data-delay="1" set:html={titulo} />
+      {intro && <p class="section__sub reveal" data-delay="2">{intro}</p>}
+      {cta && (
+        <a href="#" data-wa="general" target="_blank" rel="noopener"
+           class="btn btn--wa faq__cta reveal" data-delay="3">
+          <Fragment set:html={ICO.wa} /> Escríbenos por WhatsApp
+        </a>
+      )}
+    </div>
+
+    <ul class="faq__list reveal" data-delay="1">
+      {items.map(([q, a], i) => (
+        <li class="faq__item">
+          <button class="faq__q" type="button" id={`${p}-b${i}`} aria-expanded="false" aria-controls={`${p}-p${i}`}>
+            <span>{q}</span><span class="faq__ico" aria-hidden="true"></span>
+          </button>
+          <div class="faq__a" id={`${p}-p${i}`} role="region" aria-labelledby={`${p}-b${i}`}>
+            <div><p>{a}</p></div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

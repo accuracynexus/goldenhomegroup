@@ -1,0 +1,69 @@
+---
+/* Tarjeta de propiedad. La arma el servidor, así que su contenido ya viaja
+   en el HTML (los buscadores lo ven). Los datos que necesita el botón de
+   favoritos van en atributos data-*, para que el navegador no tenga que
+   cargar el catálogo completo. */
+import type { Propiedad } from '../lib/db';
+import { fmt } from '../lib/config';
+import { ICO, ICO_FICHA } from '../lib/iconos';
+
+interface Props { p: Propiedad; }
+const { p } = Astro.props;
+
+const foto = p.fotos?.[0] || '/assets/img/og-cover.svg';
+const noDisponible = p.estado && p.estado !== 'disponible';
+const precioM2 = fmt.precioM2(p);
+const precioFmt = fmt.precio(p.precio, p.moneda);
+const href = `/propiedad?id=${encodeURIComponent(p.id)}`;
+
+const specs: { ico: string; texto: string }[] = [];
+if (p.area) specs.push({ ico: ICO_FICHA.area, texto: fmt.area(p.area) });
+if (p.habitaciones) specs.push({ ico: ICO_FICHA.hab, texto: `${p.habitaciones} hab.` });
+if (p.banos) specs.push({ ico: ICO_FICHA.bano, texto: `${p.banos} baños` });
+// Los terrenos no tienen habitaciones ni baños: el frontis ocupa ese lugar
+if (!p.habitaciones && !p.banos && p.frontis) specs.push({ ico: ICO_FICHA.frontis, texto: p.frontis });
+---
+<article class="card reveal"
+         data-id={p.id}
+         data-titulo={p.titulo}
+         data-precio={precioFmt}
+         data-operacion={p.operacion}
+         data-ubicacion={p.ubicacion}
+         data-foto={foto}>
+  <div class="card__media">
+    <img src={foto} alt={p.titulo} loading="lazy">
+    <span class:list={['tag', p.operacion === 'alquiler' ? 'tag--dark' : 'tag--gold']}>
+      {fmt.operacion(p.operacion)}
+    </span>
+    {noDisponible && <span class:list={['estado', fmt.claseEstado(p.estado)]}>{fmt.estado(p.estado)}</span>}
+    <button class="fav" type="button" aria-label="Guardar propiedad">
+      <svg viewBox="0 0 24 24" class="ico"><path d="M12 20s-7-4.4-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.6-7 9-7 9Z"/></svg>
+    </button>
+  </div>
+
+  <div class="card__body">
+    <div class="card__meta">
+      <span class="card__tipo">{p.subtipo || fmt.tipo(p.tipo)}</span>
+      {/* La agencia opera en dos zonas muy distintas: sin esta marca, un
+          "Mala" o un "Orcotuna" no le dicen nada a quien no es de allá. */}
+      {p.region && <span class="card__zona">{p.region}</span>}
+    </div>
+    <h3 class="card__title"><a href={href}>{p.titulo}</a></h3>
+    <p class="card__loc"><Fragment set:html={ICO.lugar} /> <span>{p.ubicacion}</span></p>
+    {specs.length > 0 && (
+      <ul class="card__specs">
+        {specs.map(s => <li><Fragment set:html={s.ico} /> {s.texto}</li>)}
+      </ul>
+    )}
+    <div class="card__foot">
+      <div class="card__price">
+        <strong set:html={p.operacion === 'alquiler' ? `${precioFmt}<small>/mes</small>` : precioFmt} />
+      </div>
+      <a href={href} class="card__link" aria-label={`Ver ${p.titulo}`}>
+        <span class="card__link-txt">Ver propiedad</span>
+        <svg viewBox="0 0 24 24" class="ico"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <span class="card__preciom2">{precioM2}</span>
+    </div>
+  </div>
+</article>

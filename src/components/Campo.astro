@@ -1,0 +1,69 @@
+---
+/* Un campo de formulario. Los tipos especiales:
+     select   → desplegable con flecha propia
+     textarea → área de texto
+     file     → zona de carga con arrastrar y soltar (el control nativo no
+                se puede estilar, así que queda accesible pero fuera de vista) */
+export interface CampoDef {
+  id: string;
+  name: string;
+  label: string;
+  tipo?: string;
+  required?: boolean;
+  placeholder?: string;
+  ancho?: 'full';
+  opciones?: string[];
+  multiple?: boolean;
+  accept?: string;
+  ayuda?: string;
+  formatos?: string;
+  filas?: number;
+}
+
+const c = Astro.props as CampoDef;
+const soltar = c.multiple ? 'Arrastra tus archivos aquí' : 'Arrastra tu archivo aquí';
+const buscar = c.multiple ? 'búscalos' : 'búscalo';
+const formatos = c.formatos || (c.accept === 'image/*' ? 'JPG o PNG' : 'PDF o Word');
+---
+<div class:list={['form__field', { 'form__field--full': c.ancho === 'full' }]}>
+  <label for={c.id}>{c.label}{c.required && ' *'}</label>
+
+  {c.tipo === 'select' && (
+    <select id={c.id} name={c.name} required={c.required}>
+      <option value="">{c.placeholder || 'Selecciona una opción'}</option>
+      {c.opciones?.map(o => <option>{o}</option>)}
+    </select>
+  )}
+
+  {c.tipo === 'textarea' && (
+    <textarea id={c.id} name={c.name} rows={c.filas || 4}
+              placeholder={c.placeholder || ''} required={c.required}></textarea>
+  )}
+
+  {c.tipo === 'file' && (
+    <>
+      <div class="adjunto" data-adjunto>
+        <input type="file" class="adjunto__input" id={c.id} name={c.name}
+               multiple={c.multiple} accept={c.accept || '*'}>
+        <label class="adjunto__zona" for={c.id}>
+          <span class="adjunto__ico">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M12 16V4"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/></svg>
+          </span>
+          <span class="adjunto__texto">
+            <strong>{soltar} o <em>{buscar}</em></strong>
+            <small>{formatos}</small>
+          </span>
+        </label>
+        <ul class="adjunto__lista" data-adjunto-lista hidden></ul>
+      </div>
+      <small class="form__hint">{c.ayuda || ''}</small>
+    </>
+  )}
+
+  {!['select', 'textarea', 'file'].includes(c.tipo || '') && (
+    <input type={c.tipo || 'text'} id={c.id} name={c.name}
+           placeholder={c.placeholder || ''} required={c.required}>
+  )}
+
+  <small class="form__error"></small>
+</div>
