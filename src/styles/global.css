@@ -2308,12 +2308,16 @@ input, textarea{ caret-color:var(--gold-light); }
 @keyframes marquee-scroll{ from{ transform:translate3d(0,0,0); } to{ transform:translate3d(-50%,0,0); } }
 @keyframes nav-in{ from{ opacity:0; transform:translateX(16px); } }
 
-@media (prefers-reduced-motion: reduce){
-  .header__cta::after, .nav__cta::after{ animation:none; opacity:0; }
-  *{ animation:none !important; transition-duration:.01ms !important; }
-  .reveal{ opacity:1; transform:none; }
-  html{ scroll-behavior:auto; }
-}
+/* Sin bloque `prefers-reduced-motion`: decision del proyecto (4/9/2026).
+   El sitio conserva sus animaciones aunque el sistema pida menos movimiento
+   -incluido el ahorro de bateria de iOS y Android, que activa esa preferencia
+   por su cuenta-, porque el movimiento es parte de la identidad de la marca.
+   La contrapartida: quien active "reducir movimiento" por mareo o
+   sensibilidad vestibular no tiene forma de atenuarlo.
+
+   Si alguna vez se revierte, las dos marquesinas (.topbar__mobile y .marquee)
+   necesitan volverse deslizables al detenerse: congeladas, su contenido queda
+   recortado e inalcanzable, que es peor que el movimiento que se evitaba. */
 
 /* ==========================================================================
    20. Responsive
@@ -2714,8 +2718,3 @@ html.splash-activo{ overflow:hidden; }
 @keyframes splash-entra{ from{ opacity:0; transform:translateY(10px) scale(.985); } }
 @keyframes splash-carga{ from{ width:0; } to{ width:88%; } }
 
-@media (prefers-reduced-motion: reduce){
-  .splash__logo, .splash__barra{ animation:none; }
-  .splash__progreso{ animation-duration:.01s; }
-  .splash{ transition:none; }
-}
