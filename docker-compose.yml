@@ -15,7 +15,7 @@ services:
     environment:
       # Secreto de las sesiones del panel. OBLIGATORIO en producción:
       # se define en el archivo .env, nunca acá.
-      AUTH_SECRET: ${AUTH_SECRET:?Falta AUTH_SECRET. Genera uno con: openssl rand -hex 32}
+      AUTH_SECRET: "${AUTH_SECRET:?Falta AUTH_SECRET. Genera uno con: openssl rand -hex 32}"
       SITE_URL: ${SITE_URL:-https://goldenhomegroup.com}
       NODE_ENV: production
     volumes:
@@ -35,7 +35,7 @@ services:
       - "443:443"
       - "443:443/udp"
     environment:
-      DOMINIO: ${DOMINIO:?Falta DOMINIO (por ejemplo: goldenhomegroup.com)}
+      DOMINIO: "${DOMINIO:?Falta DOMINIO (por ejemplo: goldenhomegroup.com)}"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data      # certificados: sin esto se re-emiten en cada reinicio
